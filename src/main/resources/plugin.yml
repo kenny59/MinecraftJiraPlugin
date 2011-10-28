@@ -1,0 +1,14 @@
+name: mc-jira-plugin
+main: au.id.jaysee.McJiraPlugin
+version: 0.1
+
+commands:
+   command:
+      description: A Command
+      usage: /<command>
+   where:
+      description: Locates a nearby JIRA Issue
+      usage: /where <ISSUE>
+   getissues:
+      description: get all JIRA issues
+      usage: /getissues
