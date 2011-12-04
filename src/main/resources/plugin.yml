@@ -1,14 +1,11 @@
 name: mc-jira-plugin
-main: au.id.jaysee.McJiraPlugin
+main: au.id.jaysee.minecraft.McJiraPlugin
 version: 0.1
 
 commands:
-   command:
-      description: A Command
-      usage: /<command>
-   where:
+   gotoIssue:
       description: Locates a nearby JIRA Issue
-      usage: /where <ISSUE>
-   getissues:
+      usage: /gotoIssue <ISSUE>
+   jiraIssues:
       description: get all JIRA issues
-      usage: /getissues
+      usage: /jiraIssues

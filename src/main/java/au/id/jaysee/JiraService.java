@@ -7,6 +7,7 @@ import au.id.jaysee.jira.client.RemoteFieldValue;
 import au.id.jaysee.jira.client.RemoteIssue;
 import au.id.jaysee.jira.client.RemoteIssueType;
 import au.id.jaysee.jira.client.RemoteProject;
+import au.id.jaysee.minecraft.McJiraPlugin;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -22,7 +23,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- *
+ * @deprecated Use {@link au.id.jaysee.minecraft.jira.client.JiraClient} instead.
  */
 public class JiraService
 {
