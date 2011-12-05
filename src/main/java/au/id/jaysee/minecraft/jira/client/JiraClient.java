@@ -2,6 +2,8 @@ package au.id.jaysee.minecraft.jira.client;
 
 import org.bukkit.Location;
 
+import java.util.Collection;
+
 /**
  *
  */
@@ -12,7 +14,7 @@ public interface JiraClient {
     //public Collection<JiraIssue> getIssues(String jql);
 
     public Location getIssueLocation(String issueKey);
-    public void printAllIssues();
+    public Collection<JiraIssue> getIssues();
 
 
     // TODO: a more fluent interface for creating issues.

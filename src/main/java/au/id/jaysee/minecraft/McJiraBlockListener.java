@@ -1,7 +1,12 @@
 package au.id.jaysee.minecraft;
 
 import au.id.jaysee.helpers.Pair;
+import au.id.jaysee.minecraft.async.AsyncExecutor;
+import au.id.jaysee.minecraft.async.Callback;
+import au.id.jaysee.minecraft.async.Task;
 import au.id.jaysee.minecraft.jira.client.JiraClient;
+import au.id.jaysee.minecraft.jira.client.JiraIssue;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -16,19 +21,21 @@ import java.util.regex.Pattern;
 
 public class McJiraBlockListener extends BlockListener
 {
+    private static final String JIRA_SIGN_KEY = "{jira}";
+    private static final String JIRA_ISSUE_KEY_REGEX = "\\{[A-Z]+-[0-9]+}"; // TODO: Ensure this is accurate.
+
     private final JavaPlugin parentPlugin;
     private final JiraClient jiraClient;
+    private final AsyncExecutor taskExecutor;
     private final Logger log;
 
-    public McJiraBlockListener(final JavaPlugin parentPlugin, final JiraClient jiraClient, final Logger log)
+    public McJiraBlockListener(final JavaPlugin parentPlugin, final JiraClient jiraClient, final AsyncExecutor taskExecutor, final Logger log)
     {
         this.parentPlugin = parentPlugin;
         this.jiraClient = jiraClient;
         this.log = log;
+        this.taskExecutor = taskExecutor;
     }
-
-    private static final String JIRA_SIGN_KEY = "{jira}";
-    private static final String JIRA_ISSUE_KEY_REGEX = "\\{[A-Z]+-[0-9]+}"; // TODO: Ensure this is accurate.
 
     /**
      * When the text of a sign is changed, create or update a corresponding JIRA issue.
@@ -42,9 +49,28 @@ public class McJiraBlockListener extends BlockListener
             return;
 
         // Create a JIRA issue from this sign; strip away the prefix to get the issue text.
-        String issueSummary = getJiraIssueSummary(event);
-        Block signBlock = event.getBlock();
-        jiraClient.createIssue(event.getPlayer().getDisplayName(), issueSummary, signBlock.getX(), signBlock.getY(), signBlock.getZ());
+        final String issueSummary = getJiraIssueSummary(event);
+        final Block signBlock = event.getBlock();
+        final Location l = signBlock.getLocation();
+        final String user = event.getPlayer().getDisplayName();
+
+        taskExecutor.executeAsyncTask(new Task<String>()
+            {
+                @Override
+                public String execute()
+                {
+                    final JiraIssue newIssue = jiraClient.createIssue(user, issueSummary, l.getBlockX(), l.getBlockY(), l.getBlockZ());
+                    return newIssue.getId();
+                }
+            }, new Callback<String>()
+            {
+                @Override
+                public void execute(String input)
+                {
+                    parentPlugin.getServer().getPlayer(user).chat("Created new JIRA Issue " + input);
+                }
+            }
+        );
     }
 
     /**
@@ -76,26 +102,28 @@ public class McJiraBlockListener extends BlockListener
             log.info("Sign was not a JIRA issue.");
             return;
         }
-
-
         // Existing JIRA sign.
-        String issueKey = matchData.getRight();
+        final String issueKey = matchData.getRight();
+        final String user = event.getPlayer().getDisplayName();
         log.info(String.format("Sign for issueKey %s was destroyed; issue should be resolved.", issueKey));
 
-        executor.executeAsync(new AsyncTask<String>() {
-            public String doIt()
+        // do it.
+        taskExecutor.executeAsyncTask(new Task<String>()
+        {
+            @Override
+            public String execute()
             {
-                jiraClient.resolveIssue(issueKey, event.getPlayer().getDisplayName());
+                jiraClient.resolveIssue(issueKey, user);
                 return issueKey;
             }
-        }, new AsyncCallback<String>() {
-            public void actionResult(String input)
+        }, new Callback<String>() {
+
+            @Override
+            public void execute(String input)
             {
-                parentPlugin.getServer().broadcast("Resolved issue " + input);
+                parentPlugin.getServer().getPlayer(user).chat("Resolved JIRA issue " + input);
             }
         });
-
-        jiraClient.resolveIssue(issueKey, event.getPlayer().getDisplayName());
     }
 
     private boolean isNewJiraSign(SignChangeEvent event)

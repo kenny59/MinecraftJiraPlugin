@@ -15,6 +15,7 @@ import org.json.simple.JSONObject;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.NewCookie;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -142,7 +143,7 @@ public class DefaultJiraClient implements JiraClient
     }
 
     @Override
-    public void printAllIssues()
+    public Collection<JiraIssue> getIssues()
     {
         /** Duplicate stuff **/
         ClientConfig clientConfig = new DefaultClientConfig();
@@ -171,8 +172,7 @@ public class DefaultJiraClient implements JiraClient
         }
 
         ClientResponse searchResponse = searchBuilder.get(ClientResponse.class);
-
-
+        return null; // TODO: Return client object.
     }
 
     @Override

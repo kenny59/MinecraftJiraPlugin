@@ -2,6 +2,7 @@ package au.id.jaysee.minecraft;
 
 import au.id.jaysee.minecraft.McJiraBlockListener;
 import au.id.jaysee.minecraft.McJiraCommandExecutor;
+import au.id.jaysee.minecraft.async.AsyncExecutor;
 import au.id.jaysee.minecraft.jira.client.DefaultJiraClient;
 import au.id.jaysee.minecraft.jira.client.JiraClient;
 import org.bukkit.command.CommandExecutor;
@@ -29,6 +30,7 @@ public class McJiraPlugin extends JavaPlugin
 
     private final McJiraBlockListener blockListener = new McJiraBlockListener(this, jiraClient, log);
     private final CommandExecutor commandExecutor = new McJiraCommandExecutor(this, jiraClient, log);
+    private final AsyncExecutor taskExecutor = new AsyncExecutor(this, getServer().getScheduler(), log);
 
     /**
      * Invoked when the plugin is disabled; perform tearDown/cleanup here.
