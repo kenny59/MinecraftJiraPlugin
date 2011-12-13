@@ -1,4 +1,4 @@
-name: mc-jira-plugin
+name: minecraft-jira-plugin
 main: au.id.jaysee.minecraft.McJiraPlugin
 version: 0.1
 
