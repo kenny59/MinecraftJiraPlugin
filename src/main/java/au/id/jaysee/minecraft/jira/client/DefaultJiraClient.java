@@ -10,6 +10,7 @@ import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.bukkit.Location;
 import org.bukkit.plugin.Plugin;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import javax.ws.rs.core.Cookie;
@@ -155,11 +156,17 @@ public class DefaultJiraClient implements JiraClient
         JSONObject update = new JSONObject();
         transitionCommand.put("update", update);
 
-        JSONObject comment = new JSONObject();
+        // comment: [ ]
+        JSONArray comment = new JSONArray();
         update.put("comment", comment);
-        JSONObject addComment = new JSONObject();
-        addComment.put("body", String.format("Resolved by Minecraft User %s", user));
-        comment.put("add", addComment);
+
+        JSONObject addCommentObject = new JSONObject();
+
+        JSONObject add = new JSONObject();
+        add.put("body", String.format("Resolved by Minecraft User %s", user));
+        addCommentObject.put("add", add);
+
+        comment.add(addCommentObject);
 
         JSONObject fields = new JSONObject();
         transitionCommand.put("fields", fields);
@@ -168,9 +175,8 @@ public class DefaultJiraClient implements JiraClient
         fields.put("resolution", resolution);
 
         JSONObject transition = new JSONObject();
+        transition.put("id", 5); // Transition with ID5 = "Resolve Issue" in a default JIRA project.
         transitionCommand.put("transition", transition);
-        JSONObject transitionName = new JSONObject();
-        transitionName.put("name", "Resolve Issue");
 
         ClientResponse searchResponse = builder.post(ClientResponse.class, transitionCommand);
     }
