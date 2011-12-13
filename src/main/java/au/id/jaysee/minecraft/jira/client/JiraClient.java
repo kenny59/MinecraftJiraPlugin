@@ -15,6 +15,9 @@ public interface JiraClient {
     public DefaultJiraClient.CacheableLocation getIssueLocation(String issueKey);
     public JiraIssues getIssues();
 
+    JiraIssue getIssue(String issueKey);
+
+
 
     // TODO: a more fluent interface for creating issues.
     public JiraIssue createIssue(final String creator, final String text, final int x, final int y, final int z);

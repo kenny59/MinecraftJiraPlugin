@@ -105,6 +105,39 @@ public class DefaultJiraClient implements JiraClient
     }
 
     @Override
+    public JiraIssue getIssue(String issueKey)
+    {
+        /** Duplicate Stuff **/
+        ClientConfig clientConfig = new DefaultClientConfig();
+        clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+        Client client = Client.create(clientConfig);
+        client.addFilter(new LoggingFilter(log));
+
+        WebResource authResource = client.resource(jiraBaseUrl + "/rest/auth/1/session");
+        WebResource.Builder accept = authResource.accept("application/json");
+        accept = accept.type("application/json");
+
+        ClientResponse response = accept.post(ClientResponse.class, new UsernameAndPassword(adminUsername, adminPassword));
+        List<NewCookie> authCookies = response.getCookies();
+        log.info("Login returned: " + response.getStatus());
+        /** **/
+
+        WebResource getIssueResource = client.resource(jiraBaseUrl + "/rest/api/2/issue/" + issueKey);
+        WebResource.Builder getIssueBuilder = getIssueResource.getRequestBuilder();
+        for (Cookie c : authCookies)
+        {
+            getIssueBuilder = getIssueBuilder.cookie(c);
+        }
+        getIssueBuilder = getIssueBuilder.type("application/json");
+
+        ClientResponse getIssueResponse = getIssueBuilder.get(ClientResponse.class);
+        // TODO: assert status = 200
+
+        JSONObject responseObj = getIssueResponse.getEntity(JSONObject.class);
+        return JiraIssue.parse(responseObj);
+    }
+
+    @Override
     public boolean resolveIssue(String issueKey, String user)
     {
         /** Duplicate Stuff **/
@@ -187,7 +220,9 @@ public class DefaultJiraClient implements JiraClient
     {
         if (issueLocationCache.containsKey(issueKey))
             return issueLocationCache.get(issueKey);
-        return null;
+
+        JiraIssue.IssueLocation location = getIssue(issueKey).getLocation();
+        return new CacheableLocation(location.x, location.y, location.z);
     }
 
     @Override
@@ -429,7 +464,7 @@ public class DefaultJiraClient implements JiraClient
 
         JSONArray customField = new JSONArray();
         JSONObject setCommand = new JSONObject();
-        setCommand.put("set", String.format("{world: %s, x: %s, y: %s, z: %s}", "world", x, y, z));
+        setCommand.put("set", String.format("{world:%s,x:%s,y:%s,z:%s}", "world", x, y, z));
         customField.add(setCommand);
         update.put("customfield_10000", customField); // TODO: Make the custom field name configurable.
 

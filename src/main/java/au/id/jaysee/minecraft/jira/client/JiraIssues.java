@@ -45,16 +45,8 @@ public class JiraIssues
         for (Object o : (Iterable)entity.get("issues"))
         {
             @SuppressWarnings("unchecked")
-            Map<String, Object> issue = (Map<String, Object>)o;
-
-            JiraIssue clientIssue = new JiraIssue(issue.get("key").toString());
-
-            @SuppressWarnings("unchecked")
-            Map<String, Object> fields = (Map<String, Object>)issue.get("fields");
-
-            String summary = fields.get("summary").toString();
-            clientIssue.setSummary(summary);
-
+            Map<String, Object> issueMap = (Map<String, Object>)o;
+            JiraIssue clientIssue = JiraIssue.parse(issueMap);
             clientIssues.add(clientIssue);
         }
 
