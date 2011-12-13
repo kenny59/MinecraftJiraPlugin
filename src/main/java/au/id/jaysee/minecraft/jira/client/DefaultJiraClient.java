@@ -410,9 +410,32 @@ public class DefaultJiraClient implements JiraClient
         issueType.put("name", "Bug");
         fields.put("issuetype", issueType);
 
-        ClientResponse searchResponse = builder.post(ClientResponse.class, jiraIssue);
+        ClientResponse createResponse = builder.post(ClientResponse.class, jiraIssue);
+        // TODO: assert response status = 200
+        String issueKey = createResponse.getEntity(JSONObject.class).get("key").toString();
 
-        JiraIssue result = new JiraIssue(searchResponse.getEntity(JSONObject.class).get("key").toString());
+        // update the location field.
+        WebResource updateIssueResource = client.resource(jiraBaseUrl + "/rest/api/2/issue/" + issueKey);
+        WebResource.Builder updateIssueBuilder = updateIssueResource.getRequestBuilder();
+        for (Cookie c : authCookies)
+        {
+            updateIssueBuilder = updateIssueBuilder.cookie(c);
+        }
+        updateIssueBuilder = updateIssueBuilder.type("application/json");
+
+        JSONObject updateIssue = new JSONObject();
+        JSONObject update = new JSONObject();
+        updateIssue.put("update", update);
+
+        JSONArray customField = new JSONArray();
+        JSONObject setCommand = new JSONObject();
+        setCommand.put("set", String.format("{world: %s, x: %s, y: %s, z: %s}", "world", x, y, z));
+        customField.add(setCommand);
+        update.put("customfield_10000", customField); // TODO: Make the custom field name configurable.
+
+        ClientResponse updateResponse = updateIssueBuilder.put(ClientResponse.class, updateIssue);
+
+        JiraIssue result = new JiraIssue(issueKey);
 
         // Cache the location of the sign.
         issueLocationCache.put(result.getKey(), new CacheableLocation(x, y, z));
