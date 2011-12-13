@@ -37,7 +37,7 @@ public class JiraIssues
         this.issues = issues;
     }
 
-    static JiraIssues parse(JSONObject entity)
+    static JiraIssues parse(JSONObject entity, String locationCustomFieldId)
     {
         final int count = (Integer)entity.get("total"); // TODO: possible to avoid boxing/un-boxing?
 
@@ -46,7 +46,7 @@ public class JiraIssues
         {
             @SuppressWarnings("unchecked")
             Map<String, Object> issueMap = (Map<String, Object>)o;
-            JiraIssue clientIssue = JiraIssue.parse(issueMap);
+            JiraIssue clientIssue = JiraIssue.parse(issueMap, locationCustomFieldId);
             clientIssues.add(clientIssue);
         }
 

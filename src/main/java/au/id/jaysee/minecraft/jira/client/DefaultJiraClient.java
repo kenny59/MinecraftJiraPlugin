@@ -381,7 +381,7 @@ public class DefaultJiraClient implements JiraClient
         ClientResponse searchResponse = searchBuilder.get(ClientResponse.class);
         JSONObject entity = searchResponse.getEntity(JSONObject.class);
 
-        return JiraIssues.parse(entity);
+        return JiraIssues.parse(entity, locationCustomFieldId);
     }
 
     @Override

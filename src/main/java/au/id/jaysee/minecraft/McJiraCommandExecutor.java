@@ -1,8 +1,8 @@
 package au.id.jaysee.minecraft;
 
-import au.id.jaysee.minecraft.async.AsyncExecutor;
-import au.id.jaysee.minecraft.async.Callback;
-import au.id.jaysee.minecraft.async.Task;
+import au.id.jaysee.minecraft.task.TaskExecutor;
+import au.id.jaysee.minecraft.task.Callback;
+import au.id.jaysee.minecraft.task.Task;
 import au.id.jaysee.minecraft.jira.client.DefaultJiraClient;
 import au.id.jaysee.minecraft.jira.client.JiraClient;
 import au.id.jaysee.minecraft.jira.client.JiraIssue;
@@ -23,7 +23,7 @@ public class McJiraCommandExecutor implements CommandExecutor
 {
     private final JavaPlugin plugin;
     private final JiraClient jiraClient;
-    private final AsyncExecutor taskExecutor;
+    private final TaskExecutor taskExecutor;
     private final Logger log;
 
     private final Map<String, CommandExecutorImpl> executors = new HashMap<String, CommandExecutorImpl>();
@@ -35,7 +35,7 @@ public class McJiraCommandExecutor implements CommandExecutor
         public boolean execute(CommandSender sender, Command command, String label, String[] args);
     }
 
-    public McJiraCommandExecutor(final JavaPlugin plugin, final JiraClient jiraClient, final AsyncExecutor taskExecutor, final Logger log)
+    public McJiraCommandExecutor(final JavaPlugin plugin, final JiraClient jiraClient, final TaskExecutor taskExecutor, final Logger log)
     {
         this.plugin = plugin;
         this.jiraClient = jiraClient;

@@ -1,12 +1,11 @@
 package au.id.jaysee.minecraft;
 
-import au.id.jaysee.minecraft.async.AsyncExecutor;
+import au.id.jaysee.minecraft.task.TaskExecutor;
+import au.id.jaysee.minecraft.config.Configuration;
+import au.id.jaysee.minecraft.config.ConfigurationLoader;
 import au.id.jaysee.minecraft.jira.client.DefaultJiraClient;
 import au.id.jaysee.minecraft.jira.client.JiraClient;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandExecutor;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.FileConfigurationOptions;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -22,15 +21,8 @@ public class McJiraPlugin extends JavaPlugin
 {
     private static final Logger log = Logger.getLogger("Minecraft");
 
-    // TODO: Replace with factory, creating client with plugged-in configuration values.
-    private static final String JIRA_BASE_URL = "http://localhost:8080";
-    private static final String MINECRAFT_PROJECT_KEY = "MC";
-    private static final String JIRA_ADMIN_USERNAME = "admin";
-    private static final String JIRA_ADMIN_PASSWORD = "admin";
-    private static final String LOCATION_CUSTOM_FIELD = "10000";
-
     private JiraClient jiraClient;
-    private AsyncExecutor taskExecutor;
+    private TaskExecutor taskExecutor;
     private CommandExecutor commandExecutor;
     private McJiraBlockListener blockListener;
 
@@ -43,51 +35,25 @@ public class McJiraPlugin extends JavaPlugin
         // TODO: graceful cleanup
     }
 
-    private static final String JIRA_BASE_URL_KEY = "jira.base.url";
-    private static final String MINECRAFT_PROJECT_KEY_KEY = "jira.minecraft.project.key";
-    private static final String JIRA_ADMIN_USERNAME_KEY = "jira.admin.username";
-    private static final String JIRA_ADMIN_PASSWORD_KEY = "jira.admin.password";
-    private static final String LOCATION_CUSTOM_FIELD_KEY = "jira.location.custom.field";
-
     /**
      * Invoked when the plugin is enabled and/or the server is started; perform initialisation here.
      */
     public void onEnable()
     {
-        // TODO: print version
         log.info("Enabling Minecraft JIRA plugin - http://bitbucket.org/jaysee00/minecraftjiraplugin");
 
-        // TODO: Load configuration
-        FileConfigurationOptions fileConfigurationOptions = getConfig().options().copyDefaults(true);
-        saveConfig();
-
-        FileConfiguration config = getConfig();
-        String baseUrl = config.getString(JIRA_BASE_URL_KEY);
-        if (StringUtils.isBlank(baseUrl))
-            baseUrl = JIRA_BASE_URL;
-        String minecraftProjectKey = config.getString(MINECRAFT_PROJECT_KEY_KEY);
-        if (StringUtils.isBlank(minecraftProjectKey))
-            minecraftProjectKey = MINECRAFT_PROJECT_KEY;
-        String adminUsername = config.getString(JIRA_ADMIN_USERNAME_KEY);
-        if (StringUtils.isBlank(adminUsername))
-            adminUsername = JIRA_ADMIN_USERNAME;
-        String adminPassword = config.getString(JIRA_ADMIN_PASSWORD_KEY);
-        if (StringUtils.isBlank(adminPassword))
-            adminPassword = JIRA_ADMIN_PASSWORD;
-        String locationCustomFieldId = config.getString(LOCATION_CUSTOM_FIELD_KEY);
-        if (StringUtils.isBlank(locationCustomFieldId))
-            locationCustomFieldId = LOCATION_CUSTOM_FIELD;
-
-        log.info("base URL: " + baseUrl);
+        // Load plugin configuration from config.yml
+        final Configuration config = loadConfiguration();
 
         // Load components
-        jiraClient = new DefaultJiraClient(this, baseUrl, locationCustomFieldId, minecraftProjectKey, adminUsername, adminPassword);
-        taskExecutor = new AsyncExecutor(this, getServer().getScheduler(), log);
+        jiraClient = new DefaultJiraClient(this, config.getJiraBaseUrl(), config.getLocationCustomFieldId(), config.getMinecraftProjectKey(), config.getJiraAdminUsername(), config.getJiraAdminPassword());
+        taskExecutor = new TaskExecutor(this, getServer().getScheduler(), log);
         commandExecutor = new McJiraCommandExecutor(this, jiraClient, taskExecutor, log);
         blockListener = new McJiraBlockListener(this, jiraClient, taskExecutor, log);
 
-        final PluginManager pluginManager = this.getServer().getPluginManager();
         // Register block event listeners - code that executes when the world environment is manipulated.
+        final PluginManager pluginManager = this.getServer().getPluginManager();
+
         pluginManager.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Event.Priority.Normal, this);
         pluginManager.registerEvent(Event.Type.SIGN_CHANGE, blockListener, Event.Priority.Normal, this);
 
@@ -95,5 +61,14 @@ public class McJiraPlugin extends JavaPlugin
         // TODO: break into separate command executors
         getCommand("jiraIssues").setExecutor(commandExecutor);
         getCommand("gotoIssue").setExecutor(commandExecutor);
+    }
+
+    private Configuration loadConfiguration()
+    {
+        getConfig().options().copyDefaults(true);
+        saveConfig();
+
+        final ConfigurationLoader loader = new ConfigurationLoader(getConfig(), log);
+        return loader.load();
     }
 }

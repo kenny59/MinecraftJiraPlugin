@@ -1,4 +1,4 @@
-package au.id.jaysee.minecraft.async;
+package au.id.jaysee.minecraft.task;
 
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -8,13 +8,13 @@ import java.util.logging.Logger;
 /**
  * Does stuff on a mother-flipping background thread.
  */
-public class AsyncExecutor
+public class TaskExecutor
 {
     private final JavaPlugin plugin;
     private final BukkitScheduler scheduler;
     private final Logger log;
 
-    public AsyncExecutor(final JavaPlugin plugin, final BukkitScheduler scheduler, final Logger log)
+    public TaskExecutor(final JavaPlugin plugin, final BukkitScheduler scheduler, final Logger log)
     {
         this.plugin = plugin;
         this.scheduler = scheduler;

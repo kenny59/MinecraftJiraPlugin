@@ -3,3 +3,4 @@ jira.admin.username: admin
 jira.admin.password: admin
 jira.minecraft.project.key: MC
 jira.location.custom.field: 10000
+debug.logging.enabled: false

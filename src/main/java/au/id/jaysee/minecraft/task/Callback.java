@@ -1,4 +1,4 @@
-package au.id.jaysee.minecraft.async;
+package au.id.jaysee.minecraft.task;
 
 /**
  *

@@ -1,16 +1,15 @@
 package au.id.jaysee.minecraft;
 
 import au.id.jaysee.helpers.Pair;
-import au.id.jaysee.minecraft.async.AsyncExecutor;
-import au.id.jaysee.minecraft.async.Callback;
-import au.id.jaysee.minecraft.async.Task;
+import au.id.jaysee.minecraft.task.TaskExecutor;
+import au.id.jaysee.minecraft.task.Callback;
+import au.id.jaysee.minecraft.task.Task;
 import au.id.jaysee.minecraft.jira.client.JiraClient;
 import au.id.jaysee.minecraft.jira.client.JiraIssue;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockListener;
@@ -28,10 +27,10 @@ public class McJiraBlockListener extends BlockListener
 
     private final JavaPlugin parentPlugin;
     private final JiraClient jiraClient;
-    private final AsyncExecutor taskExecutor;
+    private final TaskExecutor taskExecutor;
     private final Logger log;
 
-    public McJiraBlockListener(final JavaPlugin parentPlugin, final JiraClient jiraClient, final AsyncExecutor taskExecutor, final Logger log)
+    public McJiraBlockListener(final JavaPlugin parentPlugin, final JiraClient jiraClient, final TaskExecutor taskExecutor, final Logger log)
     {
         this.parentPlugin = parentPlugin;
         this.jiraClient = jiraClient;
