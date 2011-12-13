@@ -160,7 +160,7 @@ public class McJiraBlockListener extends BlockListener
                 }
 
                 // All good.
-                parentPlugin.getServer().getPlayer(user).chat("Resolved JIRA issue " + input);
+                parentPlugin.getServer().getPlayer(user).chat("Resolved JIRA issue " + issueKey);
             }
         }
         );
