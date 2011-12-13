@@ -240,7 +240,7 @@ public class DefaultJiraClient implements JiraClient
 
         ClientResponse searchResponse = builder.post(ClientResponse.class, jiraIssue);
 
-        return new JiraIssue(searchResponse.getEntity(JSONObject.class).get("id").toString());
+        return new JiraIssue(searchResponse.getEntity(JSONObject.class).get("key").toString());
 
     }
 }

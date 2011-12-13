@@ -8,6 +8,7 @@ import au.id.jaysee.minecraft.jira.client.JiraClient;
 import au.id.jaysee.minecraft.jira.client.JiraIssue;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -55,21 +56,37 @@ public class McJiraBlockListener extends BlockListener
         final String user = event.getPlayer().getDisplayName();
 
         taskExecutor.executeAsyncTask(new Task<String>()
-            {
-                @Override
-                public String execute()
                 {
-                    final JiraIssue newIssue = jiraClient.createIssue(user, issueSummary, l.getBlockX(), l.getBlockY(), l.getBlockZ());
-                    return newIssue.getId();
-                }
-            }, new Callback<String>()
+                    @Override
+                    public String execute()
+                    {
+                        final JiraIssue newIssue = jiraClient.createIssue(user, issueSummary, l.getBlockX(), l.getBlockY(), l.getBlockZ());
+                        return newIssue.getId();
+                    }
+                }, new Callback<String>()
+        {
+            @Override
+            public void execute(String input)
             {
-                @Override
-                public void execute(String input)
+                parentPlugin.getServer().getPlayer(user).chat("Created new JIRA Issue " + input);
+
+                // TODO: Retrieve the world with the ID that matches the original block's world; otherwise this probably won't work in things like the Nether and The End.
+                World world = parentPlugin.getServer().getWorld("world");
+                Block blockLatest = world.getBlockAt(l);
+                log.info("The block in world " + world.getName() + " at position " + l.toString() + " is " + blockLatest.getType().toString());
+                if (blockLatest.getType().equals(Material.SIGN_POST))
                 {
-                    parentPlugin.getServer().getPlayer(user).chat("Created new JIRA Issue " + input);
+                    log.info("Preparing to update sign.");
+                    Sign signage = (Sign) blockLatest.getState();
+                    String lineOrig = signage.getLine(0);
+                    lineOrig = lineOrig.replace("{jira}", "{" + input + "}");
+                    log.info("New first line text: " + lineOrig);
+                    signage.setLine(0, lineOrig);
+                    signage.update();
+                    log.info("Sign Updated.");
                 }
             }
+        }
         );
     }
 
@@ -109,21 +126,23 @@ public class McJiraBlockListener extends BlockListener
 
         // do it.
         taskExecutor.executeAsyncTask(new Task<String>()
+                {
+                    @Override
+                    public String execute()
+                    {
+                        jiraClient.resolveIssue(issueKey, user);
+                        return issueKey;
+                    }
+                }, new Callback<String>()
         {
-            @Override
-            public String execute()
-            {
-                jiraClient.resolveIssue(issueKey, user);
-                return issueKey;
-            }
-        }, new Callback<String>() {
 
             @Override
             public void execute(String input)
             {
                 parentPlugin.getServer().getPlayer(user).chat("Resolved JIRA issue " + input);
             }
-        });
+        }
+        );
     }
 
     private boolean isNewJiraSign(SignChangeEvent event)
@@ -138,9 +157,9 @@ public class McJiraBlockListener extends BlockListener
         Matcher issueKeyMatcher = issueKeyPattern.matcher(sign.getLine(0));
 
         return new Pair<Boolean, String>(issueKeyMatcher.matches(),
-                                         issueKeyMatcher.matches() ?
-                                                 issueKeyMatcher.group().replace("{", "").replace("}", "") :
-                                                 "");
+                issueKeyMatcher.matches() ?
+                        issueKeyMatcher.group().replace("{", "").replace("}", "") :
+                        "");
     }
 
     private String getJiraIssueSummary(SignChangeEvent event)

@@ -26,11 +26,11 @@ public class McJiraPlugin extends JavaPlugin
     private static final String MINECRAFT_PROJECT_KEY = "MC";
     private static final String JIRA_ADMIN_USERNAME = "admin";
     private static final String JIRA_ADMIN_PASSWORD = "admin";
-    private final JiraClient jiraClient = new DefaultJiraClient(this, JIRA_BASE_URL, MINECRAFT_PROJECT_KEY, JIRA_ADMIN_USERNAME, JIRA_ADMIN_PASSWORD);
 
-    private final McJiraBlockListener blockListener = new McJiraBlockListener(this, jiraClient, log);
-    private final CommandExecutor commandExecutor = new McJiraCommandExecutor(this, jiraClient, log);
-    private final AsyncExecutor taskExecutor = new AsyncExecutor(this, getServer().getScheduler(), log);
+    private JiraClient jiraClient;
+    private AsyncExecutor taskExecutor;
+    private CommandExecutor commandExecutor;
+    private McJiraBlockListener blockListener;
 
     /**
      * Invoked when the plugin is disabled; perform tearDown/cleanup here.
@@ -38,6 +38,7 @@ public class McJiraPlugin extends JavaPlugin
     public void onDisable()
     {
         log.info("Disabled message here, shown in console on startup");
+        // TODO: graceful cleanup
     }
 
     /**
@@ -49,6 +50,12 @@ public class McJiraPlugin extends JavaPlugin
         log.info("Enabling Minecraft JIRA plugin - http://bitbucket.org/jaysee00/minecraftjiraplugin");
 
         // TODO: Load configuration
+
+        // Load components
+        jiraClient = new DefaultJiraClient(this, JIRA_BASE_URL, MINECRAFT_PROJECT_KEY, JIRA_ADMIN_USERNAME, JIRA_ADMIN_PASSWORD);
+        taskExecutor = new AsyncExecutor(this, getServer().getScheduler(), log);
+        commandExecutor = new McJiraCommandExecutor(this, jiraClient, taskExecutor, log);
+        blockListener = new McJiraBlockListener(this, jiraClient, taskExecutor, log);
 
         final PluginManager pluginManager = this.getServer().getPluginManager();
         // Register block event listeners - code that executes when the world environment is manipulated.
