@@ -48,6 +48,13 @@ public class JiraIssues
             Map<String, Object> issue = (Map<String, Object>)o;
 
             JiraIssue clientIssue = new JiraIssue(issue.get("key").toString());
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> fields = (Map<String, Object>)issue.get("fields");
+
+            String summary = fields.get("summary").toString();
+            clientIssue.setSummary(summary);
+
             clientIssues.add(clientIssue);
         }
 

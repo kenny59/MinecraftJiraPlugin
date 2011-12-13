@@ -1,13 +1,12 @@
 package au.id.jaysee.minecraft.jira.client;
 
-import org.bukkit.Location;
-
 /**
  *
  */
 public class JiraIssue
 {
     private String key;
+    private String summary;
 
     public JiraIssue()
     {
@@ -17,6 +16,16 @@ public class JiraIssue
     public JiraIssue(String key)
     {
         this.key = key;
+    }
+
+    public String getSummary()
+    {
+        return summary;
+    }
+
+    public void setSummary(String summary)
+    {
+        this.summary = summary;
     }
 
     public String getKey()

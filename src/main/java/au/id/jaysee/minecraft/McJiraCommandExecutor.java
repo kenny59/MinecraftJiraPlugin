@@ -15,7 +15,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -77,16 +76,14 @@ public class McJiraCommandExecutor implements CommandExecutor
                                 Player p = (Player)sender;
                                 for (JiraIssue j : input.getIssues())
                                 {
-                                    // TODO: also print summary and maybe URL too.
-                                    p.chat(j.getKey());
+                                    p.chat(j.getKey() + ": " + j.getSummary());
                                 }
                             }
                             else
                             {
                                 for (JiraIssue j : input.getIssues())
                                 {
-                                    // TODO: also print summary and maybe URL too.
-                                    log.info(j.getKey());
+                                    log.info(j.getKey() + ": " + j.getSummary());
                                 }
                             }
                         }
