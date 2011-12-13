@@ -36,7 +36,6 @@
         <url>https://bitbucket.org/jaysee00/minecraftjiraplugin/issues</url>
     </issueManagement>
 
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -98,30 +97,6 @@
                     <source>1.6</source>
                     <target>1.6</target>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>axistools-maven-plugin</artifactId>
-                <version>1.4</version>
-                <configuration>
-                    <outputDirectory>${project.build.directory}/generated-sources/axistools/wsdl2java</outputDirectory>
-                    <timestampDirectory>${project.build.directory}</timestampDirectory>
-                    <sourceDirectory>${basedir}/src/main/resources/wsdl</sourceDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>jirasoapservice-v2.wsdl</id>
-                        <configuration>
-                            <packageSpace>au.id.jaysee.jira.client</packageSpace>
-                            <wsdlFiles>
-                                <wsdlFile>jirasoapservice-v2.wsdl</wsdlFile>
-                            </wsdlFiles>
-                        </configuration>
-                        <goals>
-                            <goal>wsdl2java</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
