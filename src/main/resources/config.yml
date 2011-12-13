@@ -2,3 +2,4 @@ jira.base.url: http://localhost:8080
 jira.admin.username: admin
 jira.admin.password: admin
 jira.minecraft.project.key: MC
+jira.location.custom.field: 10000

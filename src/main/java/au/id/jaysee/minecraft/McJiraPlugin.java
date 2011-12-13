@@ -27,6 +27,7 @@ public class McJiraPlugin extends JavaPlugin
     private static final String MINECRAFT_PROJECT_KEY = "MC";
     private static final String JIRA_ADMIN_USERNAME = "admin";
     private static final String JIRA_ADMIN_PASSWORD = "admin";
+    private static final String LOCATION_CUSTOM_FIELD = "10000";
 
     private JiraClient jiraClient;
     private AsyncExecutor taskExecutor;
@@ -73,11 +74,14 @@ public class McJiraPlugin extends JavaPlugin
         String adminPassword = config.getString(JIRA_ADMIN_PASSWORD_KEY);
         if (StringUtils.isBlank(adminPassword))
             adminPassword = JIRA_ADMIN_PASSWORD;
+        String locationCustomFieldId = config.getString(LOCATION_CUSTOM_FIELD_KEY);
+        if (StringUtils.isBlank(locationCustomFieldId))
+            locationCustomFieldId = LOCATION_CUSTOM_FIELD;
 
         log.info("base URL: " + baseUrl);
 
         // Load components
-        jiraClient = new DefaultJiraClient(this, baseUrl, minecraftProjectKey, adminUsername, adminPassword);
+        jiraClient = new DefaultJiraClient(this, baseUrl, locationCustomFieldId, minecraftProjectKey, adminUsername, adminPassword);
         taskExecutor = new AsyncExecutor(this, getServer().getScheduler(), log);
         commandExecutor = new McJiraCommandExecutor(this, jiraClient, taskExecutor, log);
         blockListener = new McJiraBlockListener(this, jiraClient, taskExecutor, log);

@@ -42,7 +42,7 @@ public class JiraIssue
 
     private static final String LOCATION_REGEX = "\\{world:(.*),x:(.*),y:(.*),z:(.*)}";
 
-    static JiraIssue parse(Map<String, Object> issueMap)
+    static JiraIssue parse(Map<String, Object> issueMap, String locationCustomFieldId)
     {
         String key = issueMap.get("key").toString();
 
@@ -51,7 +51,7 @@ public class JiraIssue
 
         String summary = fields.get("summary").toString();
 
-        String location = (String) fields.get("customfield_10000");
+        String location = (String) fields.get("customfield_" + locationCustomFieldId);
         IssueLocation l = null;
         if (location != null)
         {

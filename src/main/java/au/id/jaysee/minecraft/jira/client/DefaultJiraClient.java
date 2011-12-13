@@ -33,6 +33,7 @@ public class DefaultJiraClient implements JiraClient
     private final String minecraftProjectKey;
     private final String adminUsername;
     private final String adminPassword;
+    private final String locationCustomFieldId;
 
     private final Map<String, CacheableLocation> issueLocationCache = new HashMap<String, CacheableLocation>();
 
@@ -72,13 +73,14 @@ public class DefaultJiraClient implements JiraClient
         }
     }
 
-    public DefaultJiraClient(final Plugin minecraftPlugin, final String jiraBaseUrl, final String minecraftProjectKey, final String adminUsername, final String adminPassword)
+    public DefaultJiraClient(final Plugin minecraftPlugin, final String jiraBaseUrl, final String locationCustomFieldId, final String minecraftProjectKey, final String adminUsername, final String adminPassword)
     {
         this.minecraftPlugin = minecraftPlugin;
         this.jiraBaseUrl = jiraBaseUrl;
         this.minecraftProjectKey = minecraftProjectKey;
         this.adminUsername = adminUsername;
         this.adminPassword = adminPassword;
+        this.locationCustomFieldId = locationCustomFieldId;
     }
 
     private static final class UsernameAndPassword
@@ -134,7 +136,7 @@ public class DefaultJiraClient implements JiraClient
         // TODO: assert status = 200
 
         JSONObject responseObj = getIssueResponse.getEntity(JSONObject.class);
-        return JiraIssue.parse(responseObj);
+        return JiraIssue.parse(responseObj, locationCustomFieldId);
     }
 
     @Override
@@ -466,7 +468,7 @@ public class DefaultJiraClient implements JiraClient
         JSONObject setCommand = new JSONObject();
         setCommand.put("set", String.format("{world:%s,x:%s,y:%s,z:%s}", "world", x, y, z));
         customField.add(setCommand);
-        update.put("customfield_10000", customField); // TODO: Make the custom field name configurable.
+        update.put("customfield_" + locationCustomFieldId, customField); // TODO: Make the custom field name configurable.
 
         ClientResponse updateResponse = updateIssueBuilder.put(ClientResponse.class, updateIssue);
 
