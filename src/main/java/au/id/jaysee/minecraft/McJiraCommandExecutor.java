@@ -3,10 +3,12 @@ package au.id.jaysee.minecraft;
 import au.id.jaysee.minecraft.async.AsyncExecutor;
 import au.id.jaysee.minecraft.async.Callback;
 import au.id.jaysee.minecraft.async.Task;
+import au.id.jaysee.minecraft.jira.client.DefaultJiraClient;
 import au.id.jaysee.minecraft.jira.client.JiraClient;
 import au.id.jaysee.minecraft.jira.client.JiraIssue;
 import au.id.jaysee.minecraft.jira.client.JiraIssues;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -115,16 +117,21 @@ public class McJiraCommandExecutor implements CommandExecutor
                 }
 
                 final String issueKey = args[0];
-                Location l = jiraClient.getIssueLocation(issueKey);
-                if (l == null)
+                DefaultJiraClient.CacheableLocation issueLocation = jiraClient.getIssueLocation(issueKey);
+                if (issueLocation == null)
                 {
                     plugin.getServer().broadcastMessage(issueKey + " does not exist");
                     return true;
                 }
 
+                World world = plugin.getServer().getWorld("world"); // TODO: Get the world correctly.
+                Location l = new Location(world, issueLocation.getX(), issueLocation.getY(), issueLocation.getZ());
+
                 if (sender instanceof Player)
                 {
                     Player player = (Player) sender;
+                    l = new Location(l.getWorld(), l.getBlockX(), l.getBlockY(), l.getBlockZ(), player.getLocation().getYaw(), player.getLocation().getPitch());
+
                     player.teleport(l);
 
                 } else

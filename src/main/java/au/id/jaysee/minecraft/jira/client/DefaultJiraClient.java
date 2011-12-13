@@ -2,7 +2,6 @@ package au.id.jaysee.minecraft.jira.client;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
@@ -16,8 +15,9 @@ import org.json.simple.JSONObject;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.NewCookie;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -32,6 +32,44 @@ public class DefaultJiraClient implements JiraClient
     private final String minecraftProjectKey;
     private final String adminUsername;
     private final String adminPassword;
+
+    private final Map<String, CacheableLocation> issueLocationCache = new HashMap<String, CacheableLocation>();
+
+    public final class CacheableLocation
+    {
+        private final int x;
+        private final int y;
+        private final int z;
+
+        CacheableLocation(int x, int y, int z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        CacheableLocation(Location l)
+        {
+            this.x = l.getBlockX();
+            this.y = l.getBlockY();
+            this.z = l.getBlockZ();
+        }
+
+        public int getX()
+        {
+            return x;
+        }
+
+        public int getY()
+        {
+            return y;
+        }
+
+        public int getZ()
+        {
+            return z;
+        }
+    }
 
     public DefaultJiraClient(final Plugin minecraftPlugin, final String jiraBaseUrl, final String minecraftProjectKey, final String adminUsername, final String adminPassword)
     {
@@ -138,9 +176,11 @@ public class DefaultJiraClient implements JiraClient
     }
 
     @Override
-    public Location getIssueLocation(String issueKey)
+    public CacheableLocation getIssueLocation(String issueKey)
     {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        if (issueLocationCache.containsKey(issueKey))
+            return issueLocationCache.get(issueKey);
+        return null;
     }
 
     @Override
@@ -365,7 +405,11 @@ public class DefaultJiraClient implements JiraClient
 
         ClientResponse searchResponse = builder.post(ClientResponse.class, jiraIssue);
 
-        return new JiraIssue(searchResponse.getEntity(JSONObject.class).get("key").toString());
+        JiraIssue result = new JiraIssue(searchResponse.getEntity(JSONObject.class).get("key").toString());
+
+        // Cache the location of the sign.
+        issueLocationCache.put(result.getKey(), new CacheableLocation(x, y, z));
+        return result;
 
     }
 }

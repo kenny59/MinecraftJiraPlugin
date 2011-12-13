@@ -11,7 +11,7 @@ public interface JiraClient {
 
     public void resolveIssue(String issueKey, String user);
 
-    public Location getIssueLocation(String issueKey);
+    public DefaultJiraClient.CacheableLocation getIssueLocation(String issueKey);
     public JiraIssues getIssues();
 
 
