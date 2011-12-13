@@ -9,7 +9,8 @@ import java.util.Collection;
  */
 public interface JiraClient {
 
-    public void resolveIssue(String issueKey, String user);
+    // TODO: Return the error message from the server, rather than just a simple success/fail flag
+    public boolean resolveIssue(String issueKey, String user);
 
     public DefaultJiraClient.CacheableLocation getIssueLocation(String issueKey);
     public JiraIssues getIssues();

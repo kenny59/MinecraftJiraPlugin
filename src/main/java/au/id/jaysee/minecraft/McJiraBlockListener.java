@@ -10,6 +10,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockListener;
@@ -124,21 +125,41 @@ public class McJiraBlockListener extends BlockListener
         final String user = event.getPlayer().getDisplayName();
         log.info(String.format("Sign for issueKey %s was destroyed; issue should be resolved.", issueKey));
 
-        // do it.
-        taskExecutor.executeAsyncTask(new Task<String>()
-                {
-                    @Override
-                    public String execute()
-                    {
-                        jiraClient.resolveIssue(issueKey, user);
-                        return issueKey;
-                    }
-                }, new Callback<String>()
-        {
+        final int x = brokenBlock.getX();
+        final int y = brokenBlock.getY();
+        final int z = brokenBlock.getZ();
+        final String[] originalSignData = signage.getLines();
 
+        // do it.
+        taskExecutor.executeAsyncTask(new Task<Boolean>()
+        {
             @Override
-            public void execute(String input)
+            public Boolean execute()
             {
+                return jiraClient.resolveIssue(issueKey, user);
+            }
+        }, new Callback<Boolean>()
+        {
+            @Override
+            public void execute(Boolean input)
+            {
+                if (!input)
+                {
+                    // resolution didn't work... re-create the sign.
+                    // TODO: Retrieve the world correctly.
+                    Block originalBlock = parentPlugin.getServer().getWorld("world").getBlockAt(x, y, z);
+                    originalBlock.setType(Material.SIGN_POST);
+                    Sign state = (Sign)originalBlock.getState();
+                    for (int i = 0; i < originalSignData.length; i++)
+                    {
+                        state.setLine(i, originalSignData[i]);
+                    }
+                    state.update();
+
+                    return;
+                }
+
+                // All good.
                 parentPlugin.getServer().getPlayer(user).chat("Resolved JIRA issue " + input);
             }
         }

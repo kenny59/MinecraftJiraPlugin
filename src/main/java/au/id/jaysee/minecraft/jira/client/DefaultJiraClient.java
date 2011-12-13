@@ -105,7 +105,7 @@ public class DefaultJiraClient implements JiraClient
     }
 
     @Override
-    public void resolveIssue(String issueKey, String user)
+    public boolean resolveIssue(String issueKey, String user)
     {
         /** Duplicate Stuff **/
         ClientConfig clientConfig = new DefaultClientConfig();
@@ -179,6 +179,7 @@ public class DefaultJiraClient implements JiraClient
         transitionCommand.put("transition", transition);
 
         ClientResponse searchResponse = builder.post(ClientResponse.class, transitionCommand);
+        return searchResponse.getStatus() == 204;
     }
 
     @Override
