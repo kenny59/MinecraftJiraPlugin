@@ -23,7 +23,6 @@ public class McJiraPlugin extends JavaPlugin
 
     private JiraClient jiraClient;
     private TaskExecutor taskExecutor;
-    private CommandExecutor commandExecutor;
     private McJiraBlockListener blockListener;
 
     /**
@@ -48,7 +47,7 @@ public class McJiraPlugin extends JavaPlugin
         // Load components
         jiraClient = new DefaultJiraClient(this, config.getJiraBaseUrl(), config.getLocationCustomFieldId(), config.getMinecraftProjectKey(), config.getJiraAdminUsername(), config.getJiraAdminPassword());
         taskExecutor = new TaskExecutor(this, getServer().getScheduler(), log);
-        commandExecutor = new McJiraCommandExecutor(this, jiraClient, taskExecutor, log);
+
         blockListener = new McJiraBlockListener(this, jiraClient, taskExecutor, log);
 
         // Register block event listeners - code that executes when the world environment is manipulated.
@@ -58,9 +57,8 @@ public class McJiraPlugin extends JavaPlugin
         pluginManager.registerEvent(Event.Type.SIGN_CHANGE, blockListener, Event.Priority.Normal, this);
 
         // Register command executors - code that executes in response to player /slash commands, or commands via the server console.
-        // TODO: break into separate command executors
-        getCommand("jiraIssues").setExecutor(commandExecutor);
-        getCommand("gotoIssue").setExecutor(commandExecutor);
+        getCommand("jiraIssues").setExecutor(new JiraIssuesCommandExecutor(taskExecutor, log, jiraClient));
+        getCommand("gotoIssue").setExecutor(new GoToIssueCommandExecutor(this, log, jiraClient));
     }
 
     private Configuration loadConfiguration()
