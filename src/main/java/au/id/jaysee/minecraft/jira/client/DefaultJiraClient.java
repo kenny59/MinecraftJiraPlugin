@@ -203,7 +203,7 @@ public class DefaultJiraClient implements JiraClient
 
         WebResource searchResource = client.resource(jiraBaseUrl + "/rest/api/2/search");
         MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
-        queryParams.add("jql", "project = MC");
+        queryParams.add("jql", "project = " + minecraftProjectKey + " & resolution = unresolved");
         queryParams.add("maxResults", "10");
         searchResource = searchResource.queryParams(queryParams);
         WebResource.Builder searchBuilder = searchResource.getRequestBuilder();
