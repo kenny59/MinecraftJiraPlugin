@@ -1,17 +1,16 @@
 package au.id.jaysee.minecraft;
 
-import au.id.jaysee.minecraft.McJiraBlockListener;
-import au.id.jaysee.minecraft.McJiraCommandExecutor;
 import au.id.jaysee.minecraft.async.AsyncExecutor;
 import au.id.jaysee.minecraft.jira.client.DefaultJiraClient;
 import au.id.jaysee.minecraft.jira.client.JiraClient;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.FileConfigurationOptions;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.logging.Logger;
 
 /**
@@ -43,6 +42,12 @@ public class McJiraPlugin extends JavaPlugin
         // TODO: graceful cleanup
     }
 
+    private static final String JIRA_BASE_URL_KEY = "jira.base.url";
+    private static final String MINECRAFT_PROJECT_KEY_KEY = "jira.minecraft.project.key";
+    private static final String JIRA_ADMIN_USERNAME_KEY = "jira.admin.username";
+    private static final String JIRA_ADMIN_PASSWORD_KEY = "jira.admin.password";
+    private static final String LOCATION_CUSTOM_FIELD_KEY = "jira.location.custom.field";
+
     /**
      * Invoked when the plugin is enabled and/or the server is started; perform initialisation here.
      */
@@ -52,9 +57,27 @@ public class McJiraPlugin extends JavaPlugin
         log.info("Enabling Minecraft JIRA plugin - http://bitbucket.org/jaysee00/minecraftjiraplugin");
 
         // TODO: Load configuration
+        FileConfigurationOptions fileConfigurationOptions = getConfig().options().copyDefaults(true);
+        saveConfig();
+
+        FileConfiguration config = getConfig();
+        String baseUrl = config.getString(JIRA_BASE_URL_KEY);
+        if (StringUtils.isBlank(baseUrl))
+            baseUrl = JIRA_BASE_URL;
+        String minecraftProjectKey = config.getString(MINECRAFT_PROJECT_KEY_KEY);
+        if (StringUtils.isBlank(minecraftProjectKey))
+            minecraftProjectKey = MINECRAFT_PROJECT_KEY;
+        String adminUsername = config.getString(JIRA_ADMIN_USERNAME_KEY);
+        if (StringUtils.isBlank(adminUsername))
+            adminUsername = JIRA_ADMIN_USERNAME;
+        String adminPassword = config.getString(JIRA_ADMIN_PASSWORD_KEY);
+        if (StringUtils.isBlank(adminPassword))
+            adminPassword = JIRA_ADMIN_PASSWORD;
+
+        log.info("base URL: " + baseUrl);
 
         // Load components
-        jiraClient = new DefaultJiraClient(this, JIRA_BASE_URL, MINECRAFT_PROJECT_KEY, JIRA_ADMIN_USERNAME, JIRA_ADMIN_PASSWORD);
+        jiraClient = new DefaultJiraClient(this, baseUrl, minecraftProjectKey, adminUsername, adminPassword);
         taskExecutor = new AsyncExecutor(this, getServer().getScheduler(), log);
         commandExecutor = new McJiraCommandExecutor(this, jiraClient, taskExecutor, log);
         blockListener = new McJiraBlockListener(this, jiraClient, taskExecutor, log);

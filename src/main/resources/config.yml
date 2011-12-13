@@ -1,0 +1,4 @@
+jira.base.url: http://localhost:8080
+jira.admin.username: admin
+jira.admin.password: admin
+jira.minecraft.project.key: MC
