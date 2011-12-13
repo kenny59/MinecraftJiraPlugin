@@ -11,10 +11,8 @@ public interface JiraClient {
 
     public void resolveIssue(String issueKey, String user);
 
-    //public Collection<JiraIssue> getIssues(String jql);
-
     public Location getIssueLocation(String issueKey);
-    public Collection<JiraIssue> getIssues();
+    public JiraIssues getIssues();
 
 
     // TODO: a more fluent interface for creating issues.

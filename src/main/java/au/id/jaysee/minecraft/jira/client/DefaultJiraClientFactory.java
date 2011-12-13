@@ -5,8 +5,6 @@ package au.id.jaysee.minecraft.jira.client;
  */
 class DefaultJiraClientFactory implements JiraClientFactory
 {
-
-
     @Override
     public JiraClient getClient(String jiraBaseUrl, String minecraftProjectKey, String adminUsername, String adminPassword) {
 

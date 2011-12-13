@@ -7,24 +7,25 @@ import org.bukkit.Location;
  */
 public class JiraIssue
 {
-    private final String id;
+    private String key;
 
-    public JiraIssue(String id)
+    public JiraIssue()
     {
-        this.id = id;
+
     }
 
-
-    public String getId()
+    public JiraIssue(String key)
     {
-        return id;
+        this.key = key;
     }
 
-
-    public Location getLocation()
+    public String getKey()
     {
-        return null;
+        return key;
     }
 
-
+    public void setKey(String key)
+    {
+        this.key = key;
+    }
 }

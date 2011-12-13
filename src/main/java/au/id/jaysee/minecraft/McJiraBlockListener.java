@@ -61,7 +61,7 @@ public class McJiraBlockListener extends BlockListener
                     public String execute()
                     {
                         final JiraIssue newIssue = jiraClient.createIssue(user, issueSummary, l.getBlockX(), l.getBlockY(), l.getBlockZ());
-                        return newIssue.getId();
+                        return newIssue.getKey();
                     }
                 }, new Callback<String>()
         {

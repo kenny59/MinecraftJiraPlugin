@@ -5,6 +5,7 @@ import au.id.jaysee.minecraft.async.Callback;
 import au.id.jaysee.minecraft.async.Task;
 import au.id.jaysee.minecraft.jira.client.JiraClient;
 import au.id.jaysee.minecraft.jira.client.JiraIssue;
+import au.id.jaysee.minecraft.jira.client.JiraIssues;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -57,33 +58,33 @@ public class McJiraCommandExecutor implements CommandExecutor
             {
                 log.info("getissues invoked");
 
-                taskExecutor.executeAsyncTask(new Task<Collection<JiraIssue>>()
+                taskExecutor.executeAsyncTask(new Task<JiraIssues>()
                     {
                         @Override
-                        public Collection<JiraIssue> execute()
+                        public JiraIssues execute()
                         {
                             return jiraClient.getIssues();
                         }
-                    }, new Callback<Collection<JiraIssue>>()
+                    }, new Callback<JiraIssues>()
                     {
                         @Override
-                        public void execute(Collection<JiraIssue> input)
+                        public void execute(JiraIssues input)
                         {
                             if (sender instanceof Player)
                             {
                                 Player p = (Player)sender;
-                                for (JiraIssue j : input)
+                                for (JiraIssue j : input.getIssues())
                                 {
                                     // TODO: also print summary and maybe URL too.
-                                    p.chat(j.getId());
+                                    p.chat(j.getKey());
                                 }
                             }
                             else
                             {
-                                for (JiraIssue j : input)
+                                for (JiraIssue j : input.getIssues())
                                 {
                                     // TODO: also print summary and maybe URL too.
-                                    log.info(j.getId());
+                                    log.info(j.getKey());
                                 }
                             }
                         }
