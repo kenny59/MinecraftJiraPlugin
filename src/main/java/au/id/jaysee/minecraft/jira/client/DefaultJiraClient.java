@@ -1,7 +1,6 @@
 package au.id.jaysee.minecraft.jira.client;
 
 import au.id.jaysee.minecraft.jira.client.auth.AuthenticatedResourceFactory;
-import au.id.jaysee.minecraft.jira.client.auth.AuthenticationException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import org.bukkit.Location;
@@ -77,15 +76,7 @@ public class DefaultJiraClient implements JiraClient
     @Override
     public JiraIssue getIssue(String issueKey)
     {
-        WebResource.Builder builder = null;
-        try
-        {
-            builder = authenticatedResourceFactory.getResource("/rest/api/2/issue/" + issueKey);
-        }
-        catch (AuthenticationException e)
-        {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+        WebResource.Builder builder = authenticatedResourceFactory.getResource("/rest/api/2/issue/" + issueKey);
         builder = builder.type("application/json");
         builder = builder.accept("application/json");
 
@@ -100,15 +91,7 @@ public class DefaultJiraClient implements JiraClient
     public boolean resolveIssue(String issueKey, String user)
     {
         ///api/2/issue/{issueIdOrKey}/transitions?transitionId
-        WebResource.Builder builder = null;
-        try
-        {
-            builder = authenticatedResourceFactory.getResource(String.format("/rest/api/2/issue/%s/transitions", issueKey));
-        }
-        catch (AuthenticationException e)
-        {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+        WebResource.Builder builder =  authenticatedResourceFactory.getResource(String.format("/rest/api/2/issue/%s/transitions", issueKey));
         builder = builder.type("application/json");
         builder = builder.accept("application/json");
 
@@ -179,16 +162,7 @@ public class DefaultJiraClient implements JiraClient
         UriBuilder uriBuilder = UriBuilder.fromPath("/rest/api/2/search").queryParam("maxResults", "10").queryParam("jql", String.format("project = %s & resolution = unresolved", minecraftProjectKey));
         URI uri = uriBuilder.build();
 
-
-        WebResource.Builder builder = null;
-        try
-        {
-            builder = authenticatedResourceFactory.getResource(uri.toString());
-        }
-        catch (AuthenticationException e)
-        {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+        WebResource.Builder builder = authenticatedResourceFactory.getResource(uri.toString());
         builder = builder.type("application/json");
         builder = builder.accept("application/json");
 
@@ -341,15 +315,7 @@ public class DefaultJiraClient implements JiraClient
          **/
 
 
-        WebResource.Builder builder = null;
-        try
-        {
-            builder = authenticatedResourceFactory.getResource("/rest/api/2/issue");
-        }
-        catch (AuthenticationException e)
-        {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+        WebResource.Builder builder = authenticatedResourceFactory.getResource("/rest/api/2/issue");
         builder = builder.type("application/json");
         builder = builder.accept("application/json");
 
@@ -378,15 +344,7 @@ public class DefaultJiraClient implements JiraClient
         String issueKey = createResponse.getEntity(JSONObject.class).get("key").toString();
 
         // update the location field.
-        WebResource.Builder builder2 = null;
-        try
-        {
-            builder2 = authenticatedResourceFactory.getResource("/rest/api/2/issue/" + issueKey);
-        }
-        catch (AuthenticationException e)
-        {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+        WebResource.Builder builder2  = authenticatedResourceFactory.getResource("/rest/api/2/issue/" + issueKey);
         builder2 = builder2.type("application/json");
         builder2 = builder2.accept("application/json");
 

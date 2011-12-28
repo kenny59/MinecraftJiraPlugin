@@ -1,5 +1,6 @@
 package au.id.jaysee.minecraft;
 
+import au.id.jaysee.minecraft.jira.client.auth.AuthenticatedResourceFactory;
 import au.id.jaysee.minecraft.jira.client.auth.DefaultAuthenticatedResourceFactory;
 import au.id.jaysee.minecraft.task.TaskExecutor;
 import au.id.jaysee.minecraft.config.Configuration;
@@ -45,8 +46,17 @@ public class McJiraPlugin extends JavaPlugin
         // Load plugin configuration from config.yml
         final Configuration config = loadConfiguration();
 
+        // Use the configuration to login to Jira.
+        AuthenticatedResourceFactory resourceFactory = new DefaultAuthenticatedResourceFactory(config, log);
+        if (!resourceFactory.login())
+        {
+            log.severe("*********************************************************");
+            log.severe("* Unable to login in to JIRA. Check your configuration. *");
+            log.severe("*********************************************************");
+        }
+
         // Load components
-        jiraClient = new DefaultJiraClient(new DefaultAuthenticatedResourceFactory(config, log), config.getLocationCustomFieldId(), config.getMinecraftProjectKey(), config.getJiraAdminUsername());
+        jiraClient = new DefaultJiraClient(resourceFactory, config.getLocationCustomFieldId(), config.getMinecraftProjectKey(), config.getJiraAdminUsername());
         taskExecutor = new TaskExecutor(this, getServer().getScheduler(), log);
 
         blockListener = new McJiraBlockListener(this, jiraClient, taskExecutor, log);

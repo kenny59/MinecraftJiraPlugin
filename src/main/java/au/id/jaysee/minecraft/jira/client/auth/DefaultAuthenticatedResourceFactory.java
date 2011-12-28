@@ -48,8 +48,10 @@ public class DefaultAuthenticatedResourceFactory implements AuthenticatedResourc
         return String.format(AUTH_RELATIVE_URL_FORMAT, pluginConfiguration.getJiraBaseUrl());
     }
 
-    @Override
-    public WebResource.Builder getResource(String resourceRelativeURL) throws AuthenticationException
+    List<NewCookie> cookies;
+    private boolean loggedIn = false;
+
+    public boolean login()
     {
         WebResource authResource = jerseyClient.resource(getAuthURL());
         WebResource.Builder builder = authResource.accept(MediaType.APPLICATION_JSON);
@@ -58,20 +60,33 @@ public class DefaultAuthenticatedResourceFactory implements AuthenticatedResourc
         ClientResponse response = builder.post(ClientResponse.class, new UsernameAndPassword(pluginConfiguration.getJiraAdminUsername(), pluginConfiguration.getJiraAdminPassword()));
         if (response.getStatus() != HttpURLConnection.HTTP_OK)
         {
-            final String msg = String.format("Login to JIRA Server at %s as user %s failed. Connection returned: %s (%s)", pluginConfiguration.getJiraBaseUrl(), pluginConfiguration.getJiraAdminUsername(), response.getStatus(), response.getClientResponseStatus().getReasonPhrase());
-            log.severe(msg);
-            throw new AuthenticationException(msg);
+            log.severe(String.format("Login to JIRA Server at %s as user %s failed. Connection returned: %s (%s)", pluginConfiguration.getJiraBaseUrl(), pluginConfiguration.getJiraAdminUsername(), response.getStatus(), response.getClientResponseStatus().getReasonPhrase()));
+            return false;
         }
 
         // Cache these mofos for future use.
-        List<NewCookie> authCookies = response.getCookies();
+        cookies = response.getCookies();
 
-        WebResource actualResource = jerseyClient.resource(pluginConfiguration.getJiraBaseUrl() + resourceRelativeURL);
-        WebResource.Builder actualBuilder = actualResource.getRequestBuilder();
-        for (Cookie c : authCookies)
+        loggedIn = true; // TODO: Synchronise this.
+        return true;
+    }
+
+    @Override
+    public WebResource.Builder getResource(String resourceRelativeURL)
+    {
+        WebResource resource = jerseyClient.resource(pluginConfiguration.getJiraBaseUrl() + resourceRelativeURL);
+        WebResource.Builder builder = resource.getRequestBuilder();
+
+        if (!loggedIn) // TODO: Synchronise this.
         {
-            actualBuilder = actualBuilder.cookie(c);
+            log.severe("Resource factory not logged in; request will be made anonymously.");
+            return builder;
         }
-        return actualBuilder;
+
+        for (Cookie c : cookies)
+        {
+            builder = builder.cookie(c);
+        }
+        return builder;
     }
 }

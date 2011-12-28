@@ -12,8 +12,7 @@ import com.sun.jersey.api.client.WebResource;
 public interface AuthenticatedResourceFactory
 {
 
-    public WebResource.Builder getResource(String resourceRelativeURL) throws AuthenticationException;
+    public WebResource.Builder getResource(String resourceRelativeURL);
 
-
-
+    public boolean login();
 }
