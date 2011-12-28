@@ -297,49 +297,14 @@ public class DefaultJiraClient implements JiraClient
     @Override
     public JiraIssue createIssue(String creator, String text, int x, int y, int z)
     {
-        /** Example JSON for creating issue
-         {
-         "fields" : {
-         "project" : {
-         "key" : "MC"
-         },
-         "reporter": {
-         "name" : "admin"
-         },
-         "summary": "this is a test",
-         "issuetype" : {
-         "name" : "Bug"
-         }
-         }
-         }
-         **/
-
-
         WebResource.Builder builder = authenticatedResourceFactory.getResource("/rest/api/2/issue");
         builder = builder.type("application/json");
         builder = builder.accept("application/json");
 
+        CreateIssueBuilder issueBuilder = CreateIssueBuilder.get();
+        JSONObject requestObject = issueBuilder.setProject(minecraftProjectKey).setReporter(adminUsername).setSummary(text).setIssueType("Bug").build();
 
-        JSONObject jiraIssue = new JSONObject();
-        JSONObject fields = new JSONObject();
-        jiraIssue.put("fields", fields);
-
-        JSONObject project = new JSONObject();
-        project.put("key", this.minecraftProjectKey);
-        fields.put("project", project);
-
-        JSONObject reporter = new JSONObject();
-        reporter.put("name", adminUsername);
-        fields.put("reporter", reporter);
-
-
-        fields.put("summary", text);
-
-        JSONObject issueType = new JSONObject();
-        issueType.put("name", "Bug");
-        fields.put("issuetype", issueType);
-
-        ClientResponse createResponse = builder.post(ClientResponse.class, jiraIssue);
+        ClientResponse createResponse = builder.post(ClientResponse.class, requestObject);
         // TODO: assert response status = 200
         String issueKey = createResponse.getEntity(JSONObject.class).get("key").toString();
 
