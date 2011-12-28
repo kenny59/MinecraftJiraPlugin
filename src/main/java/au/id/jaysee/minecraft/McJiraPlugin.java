@@ -1,5 +1,6 @@
 package au.id.jaysee.minecraft;
 
+import au.id.jaysee.minecraft.jira.client.auth.DefaultAuthenticatedResourceFactory;
 import au.id.jaysee.minecraft.task.TaskExecutor;
 import au.id.jaysee.minecraft.config.Configuration;
 import au.id.jaysee.minecraft.config.ConfigurationLoader;
@@ -45,7 +46,7 @@ public class McJiraPlugin extends JavaPlugin
         final Configuration config = loadConfiguration();
 
         // Load components
-        jiraClient = new DefaultJiraClient(this, config.getJiraBaseUrl(), config.getLocationCustomFieldId(), config.getMinecraftProjectKey(), config.getJiraAdminUsername(), config.getJiraAdminPassword());
+        jiraClient = new DefaultJiraClient(new DefaultAuthenticatedResourceFactory(config, log), config.getLocationCustomFieldId(), config.getMinecraftProjectKey(), config.getJiraAdminUsername());
         taskExecutor = new TaskExecutor(this, getServer().getScheduler(), log);
 
         blockListener = new McJiraBlockListener(this, jiraClient, taskExecutor, log);

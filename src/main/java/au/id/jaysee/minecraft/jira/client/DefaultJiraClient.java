@@ -1,38 +1,30 @@
 package au.id.jaysee.minecraft.jira.client;
 
-import com.sun.jersey.api.client.Client;
+import au.id.jaysee.minecraft.jira.client.auth.AuthenticatedResourceFactory;
+import au.id.jaysee.minecraft.jira.client.auth.AuthenticationException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.api.client.filter.LoggingFilter;
-import com.sun.jersey.api.json.JSONConfiguration;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.bukkit.Location;
-import org.bukkit.plugin.Plugin;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import javax.ws.rs.core.Cookie;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.NewCookie;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
 /**
-*
-*/
+ *
+ */
 public class DefaultJiraClient implements JiraClient
 {
     private final Logger log = Logger.getLogger("Minecraft");
 
-    private final Plugin minecraftPlugin;
-    private final String jiraBaseUrl;
+    private final AuthenticatedResourceFactory authenticatedResourceFactory;
+
     private final String minecraftProjectKey;
     private final String adminUsername;
-    private final String adminPassword;
     private final String locationCustomFieldId;
 
     private final Map<String, CacheableLocation> issueLocationCache = new HashMap<String, CacheableLocation>();
@@ -73,66 +65,31 @@ public class DefaultJiraClient implements JiraClient
         }
     }
 
-    public DefaultJiraClient(final Plugin minecraftPlugin, final String jiraBaseUrl, final String locationCustomFieldId, final String minecraftProjectKey, final String adminUsername, final String adminPassword)
+    public DefaultJiraClient(final AuthenticatedResourceFactory authenticatedResourceFactory, final String locationCustomFieldId, final String minecraftProjectKey, final String adminUsername)
     {
-        this.minecraftPlugin = minecraftPlugin;
-        this.jiraBaseUrl = jiraBaseUrl;
+        this.authenticatedResourceFactory = authenticatedResourceFactory;
+
         this.minecraftProjectKey = minecraftProjectKey;
         this.adminUsername = adminUsername;
-        this.adminPassword = adminPassword;
         this.locationCustomFieldId = locationCustomFieldId;
-    }
-
-    private static final class UsernameAndPassword
-    {
-        private final String username;
-        private final String password;
-
-        public UsernameAndPassword(final String username, final String password)
-        {
-            this.username = username;
-            this.password = password;
-        }
-
-        public String getUsername()
-        {
-            return username;
-        }
-
-        public String getPassword()
-        {
-            return password;
-        }
-
     }
 
     @Override
     public JiraIssue getIssue(String issueKey)
     {
-        /** Duplicate Stuff **/
-        ClientConfig clientConfig = new DefaultClientConfig();
-        clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
-        Client client = Client.create(clientConfig);
-        client.addFilter(new LoggingFilter(log));
-
-        WebResource authResource = client.resource(jiraBaseUrl + "/rest/auth/1/session");
-        WebResource.Builder accept = authResource.accept("application/json");
-        accept = accept.type("application/json");
-
-        ClientResponse response = accept.post(ClientResponse.class, new UsernameAndPassword(adminUsername, adminPassword));
-        List<NewCookie> authCookies = response.getCookies();
-        log.info("Login returned: " + response.getStatus());
-        /** **/
-
-        WebResource getIssueResource = client.resource(jiraBaseUrl + "/rest/api/2/issue/" + issueKey);
-        WebResource.Builder getIssueBuilder = getIssueResource.getRequestBuilder();
-        for (Cookie c : authCookies)
+        WebResource.Builder builder = null;
+        try
         {
-            getIssueBuilder = getIssueBuilder.cookie(c);
+            builder = authenticatedResourceFactory.getResource("/rest/api/2/issue/" + issueKey);
         }
-        getIssueBuilder = getIssueBuilder.type("application/json");
+        catch (AuthenticationException e)
+        {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        builder = builder.type("application/json");
+        builder = builder.accept("application/json");
 
-        ClientResponse getIssueResponse = getIssueBuilder.get(ClientResponse.class);
+        ClientResponse getIssueResponse = builder.get(ClientResponse.class);
         // TODO: assert status = 200
 
         JSONObject responseObj = getIssueResponse.getEntity(JSONObject.class);
@@ -142,30 +99,18 @@ public class DefaultJiraClient implements JiraClient
     @Override
     public boolean resolveIssue(String issueKey, String user)
     {
-        /** Duplicate Stuff **/
-        ClientConfig clientConfig = new DefaultClientConfig();
-        clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
-        Client client = Client.create(clientConfig);
-        client.addFilter(new LoggingFilter(log));
-
-        WebResource authResource = client.resource(jiraBaseUrl + "/rest/auth/1/session");
-        WebResource.Builder accept = authResource.accept("application/json");
-        accept = accept.type("application/json");
-
-        ClientResponse response = accept.post(ClientResponse.class, new UsernameAndPassword(adminUsername, adminPassword));
-        List<NewCookie> authCookies = response.getCookies();
-        log.info("Login returned: " + response.getStatus());
-        /** **/
-
         ///api/2/issue/{issueIdOrKey}/transitions?transitionId
-
-        WebResource resolveIssueResource = client.resource(String.format(jiraBaseUrl + "/rest/api/2/issue/%s/transitions", issueKey));
-        WebResource.Builder builder = resolveIssueResource.getRequestBuilder();
-        for (Cookie c : authCookies)
+        WebResource.Builder builder = null;
+        try
         {
-            builder = builder.cookie(c);
+            builder = authenticatedResourceFactory.getResource(String.format("/rest/api/2/issue/%s/transitions", issueKey));
+        }
+        catch (AuthenticationException e)
+        {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
         builder = builder.type("application/json");
+        builder = builder.accept("application/json");
 
         /**
          * {
@@ -230,31 +175,22 @@ public class DefaultJiraClient implements JiraClient
     @Override
     public JiraIssues getIssues()
     {
-        /** Duplicate stuff **/
-        ClientConfig clientConfig = new DefaultClientConfig();
-        clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
-        Client client = Client.create(clientConfig);
-        client.addFilter(new LoggingFilter(log));
+        log.info("** getting JIRA issues");
+        UriBuilder uriBuilder = UriBuilder.fromPath("/rest/api/2/search").queryParam("maxResults", "10").queryParam("jql", String.format("project = %s & resolution = unresolved", minecraftProjectKey));
+        URI uri = uriBuilder.build();
 
-        WebResource authResource = client.resource(jiraBaseUrl + "/rest/auth/1/session");
-        WebResource.Builder accept = authResource.accept("application/json");
-        accept = accept.type("application/json");
 
-        ClientResponse response = accept.post(ClientResponse.class, new UsernameAndPassword(adminUsername, adminPassword));
-        List<NewCookie> authCookies = response.getCookies();
-        log.info("Login returned: " + response.getStatus());
-        /** **/
-
-        WebResource searchResource = client.resource(jiraBaseUrl + "/rest/api/2/search");
-        MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
-        queryParams.add("jql", "project = " + minecraftProjectKey + " & resolution = unresolved");
-        queryParams.add("maxResults", "10");
-        searchResource = searchResource.queryParams(queryParams);
-        WebResource.Builder searchBuilder = searchResource.getRequestBuilder();
-        for (Cookie c : authCookies)
+        WebResource.Builder builder = null;
+        try
         {
-            searchBuilder = searchBuilder.cookie(c);
+            builder = authenticatedResourceFactory.getResource(uri.toString());
         }
+        catch (AuthenticationException e)
+        {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        builder = builder.type("application/json");
+        builder = builder.accept("application/json");
 
         /**
          * Example response JSON:
@@ -378,7 +314,7 @@ public class DefaultJiraClient implements JiraClient
          *  ]
          * }
          */
-        ClientResponse searchResponse = searchBuilder.get(ClientResponse.class);
+        ClientResponse searchResponse = builder.get(ClientResponse.class);
         JSONObject entity = searchResponse.getEntity(JSONObject.class);
 
         return JiraIssues.parse(entity, locationCustomFieldId);
@@ -389,44 +325,34 @@ public class DefaultJiraClient implements JiraClient
     {
         /** Example JSON for creating issue
          {
-            "fields" : {
-                "project" : {
-                    "key" : "MC"
-                },
-                "reporter": {
-                    "name" : "admin"
-                },
-                "summary": "this is a test",
-                "issuetype" : {
-                    "name" : "Bug"
-                }
-            }
+         "fields" : {
+         "project" : {
+         "key" : "MC"
+         },
+         "reporter": {
+         "name" : "admin"
+         },
+         "summary": "this is a test",
+         "issuetype" : {
+         "name" : "Bug"
+         }
+         }
          }
          **/
 
-        /** Duplicate Stuff **/
-        ClientConfig clientConfig = new DefaultClientConfig();
-        clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
-        Client client = Client.create(clientConfig);
-        client.addFilter(new LoggingFilter(log));
 
-        WebResource authResource = client.resource(jiraBaseUrl + "/rest/auth/1/session");
-        WebResource.Builder accept = authResource.accept("application/json");
-        accept = accept.type("application/json");
-
-        ClientResponse response = accept.post(ClientResponse.class, new UsernameAndPassword(adminUsername, adminPassword));
-        List<NewCookie> authCookies = response.getCookies();
-        log.info("Login returned: " + response.getStatus());
-        /** **/
-
-
-        WebResource createIssueResource = client.resource(jiraBaseUrl + "/rest/api/2/issue");
-        WebResource.Builder builder = createIssueResource.getRequestBuilder();
-        for (Cookie c : authCookies)
+        WebResource.Builder builder = null;
+        try
         {
-            builder = builder.cookie(c);
+            builder = authenticatedResourceFactory.getResource("/rest/api/2/issue");
+        }
+        catch (AuthenticationException e)
+        {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
         builder = builder.type("application/json");
+        builder = builder.accept("application/json");
+
 
         JSONObject jiraIssue = new JSONObject();
         JSONObject fields = new JSONObject();
@@ -452,13 +378,17 @@ public class DefaultJiraClient implements JiraClient
         String issueKey = createResponse.getEntity(JSONObject.class).get("key").toString();
 
         // update the location field.
-        WebResource updateIssueResource = client.resource(jiraBaseUrl + "/rest/api/2/issue/" + issueKey);
-        WebResource.Builder updateIssueBuilder = updateIssueResource.getRequestBuilder();
-        for (Cookie c : authCookies)
+        WebResource.Builder builder2 = null;
+        try
         {
-            updateIssueBuilder = updateIssueBuilder.cookie(c);
+            builder2 = authenticatedResourceFactory.getResource("/rest/api/2/issue/" + issueKey);
         }
-        updateIssueBuilder = updateIssueBuilder.type("application/json");
+        catch (AuthenticationException e)
+        {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        builder2 = builder2.type("application/json");
+        builder2 = builder2.accept("application/json");
 
         JSONObject updateIssue = new JSONObject();
         JSONObject update = new JSONObject();
@@ -468,15 +398,14 @@ public class DefaultJiraClient implements JiraClient
         JSONObject setCommand = new JSONObject();
         setCommand.put("set", String.format("{world:%s,x:%s,y:%s,z:%s}", "world", x, y, z));
         customField.add(setCommand);
-        update.put("customfield_" + locationCustomFieldId, customField); // TODO: Make the custom field name configurable.
+        update.put("customfield_" + locationCustomFieldId, customField);
 
-        ClientResponse updateResponse = updateIssueBuilder.put(ClientResponse.class, updateIssue);
+        ClientResponse updateResponse = builder2.put(ClientResponse.class, updateIssue);
 
         JiraIssue result = new JiraIssue(issueKey);
 
         // Cache the location of the sign.
         issueLocationCache.put(result.getKey(), new CacheableLocation(x, y, z));
         return result;
-
     }
 }
