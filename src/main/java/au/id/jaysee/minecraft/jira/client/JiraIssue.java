@@ -12,14 +12,6 @@ import java.util.regex.Pattern;
  */
 public class JiraIssue
 {
-    public static class IssueLocation
-    {
-        public String world;
-        public int x;
-        public int y;
-        public int z;
-    }
-
     private String key;
     private String summary;
     private IssueLocation location;
@@ -58,15 +50,9 @@ public class JiraIssue
 
             Pattern locationPattern = Pattern.compile(LOCATION_REGEX);
             Matcher locationMatcher = locationPattern.matcher(location);
-
-
             if (locationMatcher.matches())
             {
-                l = new IssueLocation();
-                l.world = locationMatcher.group(1);
-                l.x = new Integer(locationMatcher.group(2));
-                l.y = new Integer(locationMatcher.group(3));
-                l.z = new Integer(locationMatcher.group(4));
+                l = new IssueLocation(locationMatcher.group(1), new Integer(locationMatcher.group(2)), new Integer(locationMatcher.group(3)), new Integer(locationMatcher.group(4)));
             }
         }
 

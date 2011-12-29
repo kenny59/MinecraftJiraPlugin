@@ -1,6 +1,7 @@
 package au.id.jaysee.minecraft;
 
 import au.id.jaysee.minecraft.jira.client.DefaultJiraClient;
+import au.id.jaysee.minecraft.jira.client.IssueLocation;
 import au.id.jaysee.minecraft.jira.client.JiraClient;
 import au.id.jaysee.minecraft.task.TaskExecutor;
 import org.bukkit.Location;
@@ -45,7 +46,7 @@ public class GoToIssueCommandExecutor implements CommandExecutor
         }
 
         final String issueKey = args[0];
-        DefaultJiraClient.CacheableLocation issueLocation = jiraClient.getIssueLocation(issueKey);
+        IssueLocation issueLocation = jiraClient.getIssueLocation(issueKey);
         if (issueLocation == null)
         {
             parentPlugin.getServer().broadcastMessage(issueKey + " does not exist");

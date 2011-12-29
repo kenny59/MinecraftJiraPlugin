@@ -87,6 +87,12 @@ public class DefaultAuthenticatedResourceFactory implements AuthenticatedResourc
         {
             builder = builder.cookie(c);
         }
+
+        // HACK: All the resources we're going to communicate with send and receive application/json.
+        // This isn't really the place to set this, but it's convenient.
+        builder = builder.type(MediaType.APPLICATION_JSON);
+        builder = builder.accept(MediaType.APPLICATION_JSON);
+
         return builder;
     }
 }
