@@ -4,6 +4,8 @@ package au.id.jaysee.minecraft.config;
  * A plain-old Java object that holds the configuration values for the Minecraft JIRA plugin and may be passed around
  * to components in the plugin that need to be aware of the plugin's configuration.
  *
+ * @author Joe Clark
+ * @since 1.0
  * @see {@link ConfigurationLoader#load}
  */
 public final class Configuration

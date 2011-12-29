@@ -1,10 +1,9 @@
 package au.id.jaysee.minecraft.jira.client;
 
 import au.id.jaysee.minecraft.jira.client.auth.AuthenticatedResourceFactory;
+import au.id.jaysee.minecraft.jira.client.resource.CreateIssueBuilder;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
-import org.bukkit.Location;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import javax.ws.rs.core.UriBuilder;
