@@ -111,4 +111,9 @@
             <url>http://repo.bukkit.org/content/groups/public</url>
         </repository>
     </repositories>
+    <scm>
+        <connection>scm:git:git@bitbucket.org:jaysee00/minecraftjiraplugin.git</connection>
+        <developerConnection>scm:git:git@bitbucket.org:jaysee00/minecraftjiraplugin.git</developerConnection>
+        <url>git@bitbucket.org:jaysee00/minecraftjiraplugin.git</url>
+    </scm>
 </project>
