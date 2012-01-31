@@ -116,9 +116,9 @@
         </repository>
     </repositories>
     <scm>
-        <connection>scm:git:git://git@bitbucket.org:jaysee00/minecraftjiraplugin.git</connection>
-        <developerConnection>scm:git:git://git@bitbucket.org:jaysee00/minecraftjiraplugin.git</developerConnection>
-        <url>git://git@bitbucket.org:jaysee00/minecraftjiraplugin.git</url>
+        <connection>scm:git:https://bitbucket.org/jaysee00/minecraftjiraplugin.git</connection>
+        <developerConnection>scm:git:https://bitbucket.org/jaysee00/minecraftjiraplugin.git</developerConnection>
+        <url>https://bitbucket.org/jaysee00/minecraftjiraplugin.git</url>
     </scm>
 	<distributionManagement>
         <repository>
