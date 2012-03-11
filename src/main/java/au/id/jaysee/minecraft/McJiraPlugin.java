@@ -9,6 +9,9 @@ import au.id.jaysee.minecraft.jira.client.DefaultJiraClient;
 import au.id.jaysee.minecraft.jira.client.JiraClient;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.event.Event;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -64,8 +67,7 @@ public class McJiraPlugin extends JavaPlugin
         // Register block event listeners - code that executes when the world environment is manipulated.
         final PluginManager pluginManager = this.getServer().getPluginManager();
 
-        pluginManager.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Event.Priority.Normal, this);
-        pluginManager.registerEvent(Event.Type.SIGN_CHANGE, blockListener, Event.Priority.Normal, this);
+        pluginManager.registerEvents(blockListener, this);
 
         // Register command executors - code that executes in response to player /slash commands, or commands via the server console.
         getCommand("jiraIssues").setExecutor(new JiraIssuesCommandExecutor(taskExecutor, log, jiraClient));

@@ -11,8 +11,10 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -20,7 +22,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class McJiraBlockListener extends BlockListener
+public class McJiraBlockListener implements Listener
 {
     private static final String JIRA_SIGN_KEY = "{jira}";
     private static final String JIRA_ISSUE_KEY_REGEX = "\\{[A-Z]+-[0-9]+}"; // TODO: Ensure this is accurate.
@@ -41,11 +43,9 @@ public class McJiraBlockListener extends BlockListener
     /**
      * When the text of a sign is changed, create or update a corresponding JIRA issue.
      */
-    @Override
-    public void onSignChange(SignChangeEvent event)
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onSignChange(final SignChangeEvent event)
     {
-        super.onSignChange(event);
-
         if (!isNewJiraSign(event))
             return;
 
@@ -74,7 +74,7 @@ public class McJiraBlockListener extends BlockListener
                 World world = parentPlugin.getServer().getWorld("world");
                 Block blockLatest = world.getBlockAt(l);
                 log.info("The block in world " + world.getName() + " at position " + l.toString() + " is " + blockLatest.getType().toString());
-                if (blockLatest.getType().equals(Material.SIGN_POST))
+                if (blockLatest.getType().equals(Material.SIGN_POST) || blockLatest.getType().equals(Material.WALL_SIGN))
                 {
                     log.info("Preparing to update sign.");
                     Sign signage = (Sign) blockLatest.getState();
@@ -93,14 +93,14 @@ public class McJiraBlockListener extends BlockListener
     /**
      * When a sign is destroyed, resolve the corresponding JIRA issue, if it exists.
      */
-    @Override
-    public void onBlockBreak(BlockBreakEvent event)
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onBlockBreak(final BlockBreakEvent event)
     {
         log.info("Entering McJiraBlockListener.onBlockBreak");
 
-        super.onBlockBreak(event);
         Block brokenBlock = event.getBlock();
-        if (!brokenBlock.getType().equals(Material.SIGN_POST))
+        log.info("broken block is a " + brokenBlock.getType().toString());
+        if (!brokenBlock.getType().equals(Material.SIGN_POST) && !brokenBlock.getType().equals(Material.WALL_SIGN))
         {
             log.info("Block was not a sign post, exiting.");
             return;
