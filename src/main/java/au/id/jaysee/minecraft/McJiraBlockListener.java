@@ -1,6 +1,7 @@
 package au.id.jaysee.minecraft;
 
 import au.id.jaysee.helpers.Pair;
+import au.id.jaysee.minecraft.config.Configuration;
 import au.id.jaysee.minecraft.task.TaskExecutor;
 import au.id.jaysee.minecraft.task.Callback;
 import au.id.jaysee.minecraft.task.Task;
@@ -30,14 +31,16 @@ public class McJiraBlockListener implements Listener
     private final JavaPlugin parentPlugin;
     private final JiraClient jiraClient;
     private final TaskExecutor taskExecutor;
+    private final Configuration config;
     private final Logger log;
 
-    public McJiraBlockListener(final JavaPlugin parentPlugin, final JiraClient jiraClient, final TaskExecutor taskExecutor, final Logger log)
+    public McJiraBlockListener(final JavaPlugin parentPlugin, final JiraClient jiraClient, final TaskExecutor taskExecutor, final Logger log, final Configuration config)
     {
         this.parentPlugin = parentPlugin;
         this.jiraClient = jiraClient;
         this.log = log;
         this.taskExecutor = taskExecutor;
+        this.config = config;
     }
 
     /**
@@ -96,19 +99,22 @@ public class McJiraBlockListener implements Listener
     @EventHandler(priority = EventPriority.NORMAL)
     public void onBlockBreak(final BlockBreakEvent event)
     {
-        log.info("Entering McJiraBlockListener.onBlockBreak");
-
         Block brokenBlock = event.getBlock();
-        log.info("broken block is a " + brokenBlock.getType().toString());
         if (!brokenBlock.getType().equals(Material.SIGN_POST) && !brokenBlock.getType().equals(Material.WALL_SIGN))
         {
-            log.info("Block was not a sign post, exiting.");
+            if (config.isDebugLoggingEnabled())
+            {
+                log.info("Block was not a sign post, exiting.");
+            }
             return;
         }
 
         if (!(brokenBlock.getState() instanceof Sign))
         {
-            log.info("Block did not contain sign state, exiting.");
+            if (config.isDebugLoggingEnabled())
+            {
+                log.info("Block did not contain sign state, exiting.");
+            }
             return;
         }
 
@@ -116,7 +122,10 @@ public class McJiraBlockListener implements Listener
         final Pair<Boolean, String> matchData = isExistingJiraSign(signage);
         if (!matchData.getLeft())
         {
-            log.info("Sign was not a JIRA issue.");
+            if (config.isDebugLoggingEnabled())
+            {
+                log.info("Sign was not a JIRA issue.");
+            }
             return;
         }
         // Existing JIRA sign.

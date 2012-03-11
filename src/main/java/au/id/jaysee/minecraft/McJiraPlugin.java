@@ -62,7 +62,7 @@ public class McJiraPlugin extends JavaPlugin
         jiraClient = new DefaultJiraClient(resourceFactory, config.getLocationCustomFieldId(), config.getMinecraftProjectKey(), config.getJiraAdminUsername());
         taskExecutor = new TaskExecutor(this, getServer().getScheduler());
 
-        blockListener = new McJiraBlockListener(this, jiraClient, taskExecutor, log);
+        blockListener = new McJiraBlockListener(this, jiraClient, taskExecutor, log, config);
 
         // Register block event listeners - code that executes when the world environment is manipulated.
         final PluginManager pluginManager = this.getServer().getPluginManager();
