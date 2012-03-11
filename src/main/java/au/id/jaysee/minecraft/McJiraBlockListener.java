@@ -153,17 +153,7 @@ public class McJiraBlockListener implements Listener
             {
                 if (!input)
                 {
-                    // resolution didn't work... re-create the sign.
-                    // TODO: Retrieve the world correctly.
-                    Block originalBlock = parentPlugin.getServer().getWorld("world").getBlockAt(x, y, z);
-                    originalBlock.setType(Material.SIGN_POST);
-                    Sign state = (Sign)originalBlock.getState();
-                    for (int i = 0; i < originalSignData.length; i++)
-                    {
-                        state.setLine(i, originalSignData[i]);
-                    }
-                    state.update();
-
+                    log.warning("Attempt to resolve JIRA Issue " + issueKey + " did not succeed, but the sign is being destroyed anyway.");
                     return;
                 }
 
