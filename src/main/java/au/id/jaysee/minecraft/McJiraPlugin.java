@@ -24,7 +24,7 @@ import java.util.logging.Logger;
  */
 public class McJiraPlugin extends JavaPlugin
 {
-    private static final Logger log = Logger.getLogger("Minecraft");
+    private Logger log;
 
     private JiraClient jiraClient;
     private TaskExecutor taskExecutor;
@@ -44,6 +44,7 @@ public class McJiraPlugin extends JavaPlugin
      */
     public void onEnable()
     {
+        log = getLogger();
         log.info("Enabling Minecraft JIRA plugin - http://bitbucket.org/jaysee00/minecraftjiraplugin");
 
         // Load plugin configuration from config.yml
