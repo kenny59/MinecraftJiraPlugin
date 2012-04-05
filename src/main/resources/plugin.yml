@@ -1,6 +1,6 @@
 name: minecraft-jira-plugin
 main: au.id.jaysee.minecraft.McJiraPlugin
-version: 0.1
+version: 0.3
 
 commands:
    gotoIssue:
