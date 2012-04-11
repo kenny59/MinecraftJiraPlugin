@@ -1,5 +1,6 @@
 package au.id.jaysee.minecraft.jira.client;
 
+import au.id.jaysee.helpers.Either;
 import org.bukkit.Location;
 
 import java.util.Collection;
@@ -20,6 +21,6 @@ public interface JiraClient {
 
 
     // TODO: a more fluent interface for creating issues.
-    public JiraIssue createIssue(final String creator, final String text, String world, final int x, final int y, final int z);
+    public Either<JiraIssue, JiraError> createIssue(final String creator, final String text, String world, final int x, final int y, final int z);
 
 }

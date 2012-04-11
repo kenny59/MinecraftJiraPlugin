@@ -1,15 +1,19 @@
 package au.id.jaysee.minecraft.jira.client;
 
+import au.id.jaysee.helpers.Either;
 import au.id.jaysee.minecraft.jira.client.auth.AuthenticatedResourceFactory;
 import au.id.jaysee.minecraft.jira.client.resource.CreateIssueBuilder;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -83,15 +87,29 @@ public class DefaultJiraClient implements JiraClient
     }
 
     @Override
-    public JiraIssue createIssue(String creator, String text, String world, int x, int y, int z)
+    public Either<JiraIssue, JiraError> createIssue(String creator, String text, String world, int x, int y, int z)
     {
         WebResource.Builder builder = authenticatedResourceFactory.getResource("/rest/api/2/issue");
 
         JSONObject requestObject = CreateIssueBuilder.get().setProject(minecraftProjectKey).setReporter(adminUsername).setSummary(text).setIssueType("Bug").build();
 
         ClientResponse createResponse = builder.post(ClientResponse.class, requestObject);
-        // TODO: assert response status = 200
-        String issueKey = createResponse.getEntity(JSONObject.class).get("key").toString();
+        JSONObject responseEntity = createResponse.getEntity(JSONObject.class);
+        if (createResponse.getClientResponseStatus().getStatusCode() != 201)
+        {
+            // TODO: Make this more robust
+            ArrayList<String> errorMessages = (ArrayList<String>)responseEntity.get("errorMessages");
+            Map<String, Object> errors = (Map<String, Object>)responseEntity.get("errors");
+
+            JiraError error = new JiraError(errorMessages);
+            for (String key : errors.keySet())
+            {
+                error.addErrorMessage(key + " " + errors.get(key).toString());
+            }
+            return new Either<JiraIssue, JiraError>(null, error);
+        }
+
+        String issueKey = responseEntity.get("key").toString();
 
         // update the location field.
         WebResource.Builder builder2  = authenticatedResourceFactory.getResource("/rest/api/2/issue/" + issueKey);
@@ -106,6 +124,6 @@ public class DefaultJiraClient implements JiraClient
 
         // Cache the location of the sign.
         issueLocationCache.put(result.getKey(), new IssueLocation(world, x, y, z));
-        return result;
+        return new Either<JiraIssue, JiraError>(result, null);
     }
 }
