@@ -56,6 +56,7 @@ public class McJiraBlockListener implements Listener
         final String issueSummary = getJiraIssueSummary(event);
         final Block signBlock = event.getBlock();
         final Location l = signBlock.getLocation();
+        final World w = signBlock.getWorld();
         final String user = event.getPlayer().getDisplayName();
 
         taskExecutor.executeAsyncTask(new Task<String>()
@@ -73,10 +74,8 @@ public class McJiraBlockListener implements Listener
             {
                 parentPlugin.getServer().getPlayer(user).chat("Created new JIRA Issue " + input);
 
-                // TODO: Retrieve the world with the ID that matches the original block's world; otherwise this probably won't work in things like the Nether and The End.
-                World world = parentPlugin.getServer().getWorld("world");
-                Block blockLatest = world.getBlockAt(l);
-                log.info("The block in world " + world.getName() + " at position " + l.toString() + " is " + blockLatest.getType().toString());
+                Block blockLatest = w.getBlockAt(l);
+                log.info("The block in world " + w.getName() + " at position " + l.toString() + " is " + blockLatest.getType().toString());
                 if (blockLatest.getType().equals(Material.SIGN_POST) || blockLatest.getType().equals(Material.WALL_SIGN))
                 {
                     log.info("Preparing to update sign.");

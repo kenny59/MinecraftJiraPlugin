@@ -96,7 +96,7 @@ public class DefaultJiraClient implements JiraClient
         // update the location field.
         WebResource.Builder builder2  = authenticatedResourceFactory.getResource("/rest/api/2/issue/" + issueKey);
 
-        final String coordinates = String.format("{world:%s,x:%s,y:%s,z:%s}", "world", x, y, z);
+        final String coordinates = String.format("{world:%s,x:%s,y:%s,z:%s}", world, x, y, z);
         final String customFieldName = "customfield_" + locationCustomFieldId;
         JSONObject updateObject = UpdateIssueBuilder.get().setField(customFieldName, coordinates).build();
 

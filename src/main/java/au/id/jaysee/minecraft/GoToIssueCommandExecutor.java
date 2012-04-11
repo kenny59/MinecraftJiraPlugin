@@ -53,7 +53,7 @@ public class GoToIssueCommandExecutor implements CommandExecutor
             return true;
         }
 
-        World world = parentPlugin.getServer().getWorld("world"); // TODO: Get the world correctly.
+        World world = parentPlugin.getServer().getWorld(issueLocation.getWorld());
         Location l = new Location(world, issueLocation.getX(), issueLocation.getY(), issueLocation.getZ());
 
         if (sender instanceof Player)
