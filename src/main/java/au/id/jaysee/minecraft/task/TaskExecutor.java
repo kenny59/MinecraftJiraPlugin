@@ -73,6 +73,18 @@ public final class TaskExecutor
         this.scheduler = scheduler;
     }
 
+    public <T> void executeAsyncTask(final Task<T> task)
+    {
+        scheduler.scheduleAsyncDelayedTask(plugin, new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                task.execute();
+            }
+        });
+    }
+
     /**
      * Provides a convenient method for executing an asynchronous task on a background thread with a callback that is
      * automatically marshalled back on to the main thread when the async task is complete.
