@@ -1,7 +1,9 @@
 package au.id.jaysee.minecraft;
 
+import au.id.jaysee.helpers.Either;
 import au.id.jaysee.helpers.Pair;
 import au.id.jaysee.minecraft.config.Configuration;
+import au.id.jaysee.minecraft.jira.client.JiraError;
 import au.id.jaysee.minecraft.task.TaskExecutor;
 import au.id.jaysee.minecraft.task.Callback;
 import au.id.jaysee.minecraft.task.Task;
@@ -56,37 +58,45 @@ public class McJiraBlockListener implements Listener
         final String issueSummary = getJiraIssueSummary(event);
         final Block signBlock = event.getBlock();
         final Location l = signBlock.getLocation();
+        final World w = signBlock.getWorld();
         final String user = event.getPlayer().getDisplayName();
 
-        taskExecutor.executeAsyncTask(new Task<String>()
+        taskExecutor.executeAsyncTask(new Task<Either<JiraIssue, JiraError>>()
                 {
                     @Override
-                    public String execute()
+                    public Either<JiraIssue, JiraError> execute()
                     {
-                        final JiraIssue newIssue = jiraClient.createIssue(user, issueSummary, l.getWorld().getName(), l.getBlockX(), l.getBlockY(), l.getBlockZ());
-                        return newIssue.getKey();
+                        return jiraClient.createIssue(user, issueSummary, l.getWorld().getName(), l.getBlockX(), l.getBlockY(), l.getBlockZ());
                     }
-                }, new Callback<String>()
+                }, new Callback<Either<JiraIssue, JiraError>>()
         {
             @Override
-            public void execute(String input)
+            public void execute(Either<JiraIssue, JiraError> input)
             {
-                parentPlugin.getServer().getPlayer(user).chat("Created new JIRA Issue " + input);
-
-                // TODO: Retrieve the world with the ID that matches the original block's world; otherwise this probably won't work in things like the Nether and The End.
-                World world = parentPlugin.getServer().getWorld("world");
-                Block blockLatest = world.getBlockAt(l);
-                log.info("The block in world " + world.getName() + " at position " + l.toString() + " is " + blockLatest.getType().toString());
-                if (blockLatest.getType().equals(Material.SIGN_POST) || blockLatest.getType().equals(Material.WALL_SIGN))
+                if (input.getFirst() != null)
                 {
-                    log.info("Preparing to update sign.");
-                    Sign signage = (Sign) blockLatest.getState();
-                    String lineOrig = signage.getLine(0);
-                    lineOrig = lineOrig.replace("{jira}", "{" + input + "}");
-                    log.info("New first line text: " + lineOrig);
-                    signage.setLine(0, lineOrig);
-                    signage.update();
-                    log.info("Sign Updated.");
+                    parentPlugin.getServer().getPlayer(user).chat("Created new JIRA Issue " + input.getFirst().getKey());
+
+                    Block blockLatest = w.getBlockAt(l);
+                    log.info("The block in world " + w.getName() + " at position " + l.toString() + " is " + blockLatest.getType().toString());
+                    if (blockLatest.getType().equals(Material.SIGN_POST) || blockLatest.getType().equals(Material.WALL_SIGN))
+                    {
+                        log.info("Preparing to update sign.");
+                        Sign signage = (Sign) blockLatest.getState();
+                        String lineOrig = signage.getLine(0);
+                        lineOrig = lineOrig.replace("{jira}", "{" + input.getFirst().getKey() + "}");
+                        log.info("New first line text: " + lineOrig);
+                        signage.setLine(0, lineOrig);
+                        signage.update();
+                        log.info("Sign Updated.");
+                    }
+                }
+                else
+                {
+                    parentPlugin.getServer().getPlayer(user).sendMessage("Could not create new JIRA Issue :(");
+                    String[] errorMessages = new String[input.getSecond().getErrorMessages().size()];
+                    input.getSecond().getErrorMessages().toArray(errorMessages);
+                    parentPlugin.getServer().getPlayer(user).sendMessage(errorMessages);
                 }
             }
         }
