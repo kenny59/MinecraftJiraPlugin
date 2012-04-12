@@ -60,7 +60,7 @@ public class McJiraPlugin extends JavaPlugin
         }
 
         // Load components
-        jiraClient = new DefaultJiraClient(resourceFactory, config.getLocationCustomFieldId(), config.getMinecraftProjectKey(), config.getJiraAdminUsername());
+        jiraClient = new DefaultJiraClient(log, resourceFactory, config.getLocationCustomFieldId(), config.getMinecraftProjectKey(), config.getJiraAdminUsername());
         taskExecutor = new TaskExecutor(this, getServer().getScheduler());
 
         blockListener = new McJiraBlockListener(this, jiraClient, taskExecutor, log, config);

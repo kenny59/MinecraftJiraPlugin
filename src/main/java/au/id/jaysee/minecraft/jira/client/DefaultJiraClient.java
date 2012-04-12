@@ -21,7 +21,7 @@ import java.util.logging.Logger;
  */
 public class DefaultJiraClient implements JiraClient
 {
-    private final Logger log = Logger.getLogger("Minecraft");
+    private final Logger log;
 
     private final AuthenticatedResourceFactory authenticatedResourceFactory;
 
@@ -31,13 +31,14 @@ public class DefaultJiraClient implements JiraClient
 
     private final Map<String, IssueLocation> issueLocationCache = new HashMap<String, IssueLocation>();
 
-    public DefaultJiraClient(final AuthenticatedResourceFactory authenticatedResourceFactory, final String locationCustomFieldId, final String minecraftProjectKey, final String adminUsername)
+    public DefaultJiraClient(final Logger log, final AuthenticatedResourceFactory authenticatedResourceFactory, final String locationCustomFieldId, final String minecraftProjectKey, final String adminUsername)
     {
         this.authenticatedResourceFactory = authenticatedResourceFactory;
 
         this.minecraftProjectKey = minecraftProjectKey;
         this.adminUsername = adminUsername;
         this.locationCustomFieldId = locationCustomFieldId;
+        this.log = log;
     }
 
     @Override
