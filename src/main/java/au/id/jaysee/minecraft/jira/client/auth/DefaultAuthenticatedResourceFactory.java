@@ -25,7 +25,7 @@ import java.util.logging.Logger;
  * @see <a href="http://docs.atlassian.com/jira/REST/5.0-rc2/#id3420885>JIRA 5.0-rc2 REST API documentation: /rest/auth/1/session</a>
  * @since 1.0
  */
-public class DefaultAuthenticatedResourceFactory implements AuthenticatedResourceFactory
+class DefaultAuthenticatedResourceFactory implements AuthenticatedResourceFactory
 {
     private static final String AUTH_RELATIVE_URL_FORMAT = "%s/rest/auth/1/session";
 
