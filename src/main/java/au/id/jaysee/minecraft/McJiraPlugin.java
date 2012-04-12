@@ -1,17 +1,12 @@
 package au.id.jaysee.minecraft;
 
-import au.id.jaysee.minecraft.jira.client.auth.AuthenticatedResourceFactory;
-import au.id.jaysee.minecraft.jira.client.auth.DefaultAuthenticatedResourceFactory;
-import au.id.jaysee.minecraft.task.TaskExecutor;
 import au.id.jaysee.minecraft.config.Configuration;
 import au.id.jaysee.minecraft.config.ConfigurationLoader;
 import au.id.jaysee.minecraft.jira.client.DefaultJiraClient;
 import au.id.jaysee.minecraft.jira.client.JiraClient;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.event.Event;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.plugin.EventExecutor;
+import au.id.jaysee.minecraft.jira.client.auth.AuthenticatedResourceFactory;
+import au.id.jaysee.minecraft.jira.client.auth.BasicAuthenticatedResourceFactory;
+import au.id.jaysee.minecraft.task.TaskExecutor;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -51,7 +46,7 @@ public class McJiraPlugin extends JavaPlugin
         final Configuration config = loadConfiguration();
 
         // Use the configuration to login to Jira.
-        AuthenticatedResourceFactory resourceFactory = new DefaultAuthenticatedResourceFactory(config, log);
+        AuthenticatedResourceFactory resourceFactory = new BasicAuthenticatedResourceFactory(config, log);
         if (!resourceFactory.login())
         {
             log.severe("*********************************************************");
