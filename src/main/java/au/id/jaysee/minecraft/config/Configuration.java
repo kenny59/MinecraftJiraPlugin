@@ -17,6 +17,9 @@ public final class Configuration
     private final String locationCustomFieldId;
     private final boolean debugLoggingEnabled;
 
+    // Feature switches
+    private final boolean dynamicUserCreation;
+
     /**
      * Constructs a new Configuration POJO. This constructor has package-only access; should only be called by
      * {@link ConfigurationLoader#load}.
@@ -28,7 +31,7 @@ public final class Configuration
      * @param locationCustomFieldId The Field ID of the custom field that is used to persist the world co-ordinates of JIRA issue.
      * @param debugLoggingEnabled   Whether or not diagnostic logging will be printed to the server console.
      */
-    Configuration(String jiraBaseUrl, String minecraftProjectKey, String jiraAdminUsername, String jiraAdminPassword, String locationCustomFieldId, boolean debugLoggingEnabled)
+    Configuration(String jiraBaseUrl, String minecraftProjectKey, String jiraAdminUsername, String jiraAdminPassword, String locationCustomFieldId, boolean debugLoggingEnabled, boolean dynamicUserCreation)
     {
         this.jiraBaseUrl = jiraBaseUrl;
         this.minecraftProjectKey = minecraftProjectKey;
@@ -36,6 +39,17 @@ public final class Configuration
         this.jiraAdminPassword = jiraAdminPassword;
         this.locationCustomFieldId = locationCustomFieldId;
         this.debugLoggingEnabled = debugLoggingEnabled;
+
+        this.dynamicUserCreation = dynamicUserCreation;
+    }
+
+    /**
+     * Gets the value of the feature switch indicating if the Minecraft plugin should automatically create matching user
+     * accounts in JIRA for users logging in to the Minecraft server.
+     */
+    public boolean isDynamicUserCreationEnabled()
+    {
+        return dynamicUserCreation;
     }
 
     /**

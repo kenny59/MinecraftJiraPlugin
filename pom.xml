@@ -39,6 +39,44 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencies>
+        <!-- Dependencies necessary for SOAP API Access -->
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-discovery</groupId>
+            <artifactId>commons-discovery</artifactId>
+            <version>0.4</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>wsdl4j</groupId>
+            <artifactId>wsdl4j</artifactId>
+            <version>1.6.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>axis</groupId>
+            <artifactId>axis-jaxrpc</artifactId>
+            <version>1.4</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.axis</groupId>
+            <artifactId>axis</artifactId>
+            <scope>compile</scope>
+            <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml</groupId>
+            <artifactId>jaxrpc-api</artifactId>
+            <version>1.1</version>
+        </dependency>
+        <!-- -->
+
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
@@ -73,7 +111,6 @@
             <version>1.0-2</version>
         </dependency>
 
-
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
@@ -90,7 +127,30 @@
             </resource>
         </resources>
         <plugins>
-
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>axistools-maven-plugin</artifactId>
+                <version>1.4</version>
+                <configuration>
+                    <outputDirectory>${project.build.directory}/generated-sources/axistools/wsdl2java</outputDirectory>
+                    <timestampDirectory>${project.build.directory}</timestampDirectory>
+                    <sourceDirectory>${basedir}/src/main/resources/wsdl</sourceDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>jirasoapservice-v2.wsdl</id>
+                        <configuration>
+                            <packageSpace>au.id.jaysee.jira.client</packageSpace>
+                            <wsdlFiles>
+                                <wsdlFile>jirasoapservice-v2.wsdl</wsdlFile>
+                            </wsdlFiles>
+                        </configuration>
+                        <goals>
+                            <goal>wsdl2java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-shade-plugin</artifactId>
                 <executions>
@@ -136,7 +196,7 @@
         <developerConnection>scm:git:https://bitbucket.org/jaysee00/minecraftjiraplugin.git</developerConnection>
         <url>https://bitbucket.org/jaysee00/minecraftjiraplugin.git</url>
     </scm>
-	<distributionManagement>
+    <distributionManagement>
         <repository>
             <id>atlassian-contrib</id>
             <name>Atlassian Contrib Repository</name>

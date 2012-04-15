@@ -2,10 +2,7 @@ package au.id.jaysee.minecraft;
 
 import au.id.jaysee.minecraft.config.Configuration;
 import au.id.jaysee.minecraft.config.ConfigurationLoader;
-import au.id.jaysee.minecraft.jira.client.DefaultJiraClient;
-import au.id.jaysee.minecraft.jira.client.JiraClient;
-import au.id.jaysee.minecraft.jira.client.ActivityStreamClient;
-import au.id.jaysee.minecraft.jira.client.DefaultActivityStreamClient;
+import au.id.jaysee.minecraft.jira.client.*;
 import au.id.jaysee.minecraft.jira.client.auth.AuthenticatedResourceFactory;
 import au.id.jaysee.minecraft.jira.client.auth.BasicAuthenticatedResourceFactory;
 import au.id.jaysee.minecraft.task.TaskExecutor;
@@ -59,6 +56,8 @@ public class McJiraPlugin extends JavaPlugin
         // Load components
         jiraClient = new DefaultJiraClient(log, resourceFactory, config.getLocationCustomFieldId(), config.getMinecraftProjectKey(), config.getJiraAdminUsername());
         final ActivityStreamClient activityStreamClient = new DefaultActivityStreamClient(this, config, resourceFactory);
+        final JiraUserClient jiraUserClient = new JiraUserClient(log, config);
+
 
         taskExecutor = new TaskExecutor(this, getServer().getScheduler());
 
@@ -67,7 +66,7 @@ public class McJiraPlugin extends JavaPlugin
         // Register block event listeners - code that executes when the world environment is manipulated.
         final PluginManager pluginManager = this.getServer().getPluginManager();
 
-        final ActivityListener streamListener = new ActivityListener(this, activityStreamClient, taskExecutor);
+        final LoginListener streamListener = new LoginListener(this, config, jiraUserClient, activityStreamClient, taskExecutor);
         pluginManager.registerEvents(blockListener, this);
 
         // Register command executors - code that executes in response to player /slash commands, or commands via the server console.
