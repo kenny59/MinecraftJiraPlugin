@@ -132,7 +132,7 @@
                 <artifactId>axistools-maven-plugin</artifactId>
                 <version>1.4</version>
                 <configuration>
-                    <outputDirectory>${project.build.directory}/generated-sources/axistools/wsdl2java</outputDirectory>
+                    <outputDirectory>${project.build.directory}/generated-sources/wsdl2java</outputDirectory>
                     <timestampDirectory>${project.build.directory}</timestampDirectory>
                     <sourceDirectory>${basedir}/src/main/resources/wsdl</sourceDirectory>
                 </configuration>
