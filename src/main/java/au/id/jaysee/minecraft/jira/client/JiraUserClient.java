@@ -46,7 +46,8 @@ public class JiraUserClient
         String securePassword = "minecraft"; // TODO: Generate this password securely.
         try
         {
-            service.createUser(token, username, securePassword, "Some Minecraft User", "example@example.com");
+            // TODO: We have to force usernames to lowercase in JIRA. Will this cause clashes? Are minecraft usernames case sensitive?
+            service.createUser(token, username.toLowerCase(), securePassword, "Some Minecraft User", "example@example.com");
             log.info("Create user succeeded");
         } catch (RemoteException e)
         {
