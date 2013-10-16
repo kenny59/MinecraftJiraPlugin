@@ -4,7 +4,7 @@
 
     <groupId>au.id.jaysee</groupId>
     <artifactId>minecraft-jira-plugin</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.5</version>
     <packaging>jar</packaging>
 
     <name>Minecraft JIRA Plugin</name>
