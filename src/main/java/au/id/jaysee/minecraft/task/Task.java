@@ -1,5 +1,7 @@
 package au.id.jaysee.minecraft.task;
 
+import java.net.URISyntaxException;
+
 /**
  * Implemented anonymously by callers of the {@link TaskExecutor#executeAsyncTask(Task, Callback)} method to provide a
  * delegate that is invoked asynchronously on a background thread in order to avoid blocking the main Minecraft thread.
@@ -16,5 +18,5 @@ public interface Task<T>
      * Invokes the asynchronous task.
      * @return The value to be passed back to the foreground callback.
      */
-    public T execute();
+    public T execute() throws URISyntaxException;
 }

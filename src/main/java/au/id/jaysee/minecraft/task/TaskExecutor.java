@@ -3,6 +3,8 @@ package au.id.jaysee.minecraft.task;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
+import java.net.URISyntaxException;
+
 /**
  * <p/>
  * Defines a helpful component that is able to perform tasks on a background thread and then marshall a callback back
@@ -75,12 +77,16 @@ public final class TaskExecutor
 
     public <T> void executeAsyncTask(final Task<T> task)
     {
-        scheduler.scheduleAsyncDelayedTask(plugin, new Runnable()
+        scheduler.runTaskAsynchronously(plugin, new Runnable()
         {
             @Override
             public void run()
             {
-                task.execute();
+                try {
+                    task.execute();
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -96,18 +102,24 @@ public final class TaskExecutor
      */
     public <T> void executeAsyncTask(final Task<T> task, final Callback<T> callback)
     {
-        scheduler.scheduleAsyncDelayedTask(plugin, new Runnable()
+        scheduler.runTaskAsynchronously(plugin, new Runnable()
         {
             @Override
             public void run()
             {
-                final T result = task.execute();
+                T result = null;
+                try {
+                    result = task.execute();
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
+                T finalResult = result;
                 scheduler.scheduleSyncDelayedTask(plugin, new Runnable()
                 {
                     @Override
                     public void run()
                     {
-                        callback.execute(result);
+                        callback.execute(finalResult);
                     }
                 });
             }

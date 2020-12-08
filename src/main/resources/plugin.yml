@@ -1,11 +1,24 @@
 name: minecraft-jira-plugin
 main: au.id.jaysee.minecraft.McJiraPlugin
-version: ${project.version}
+version: 1.0.0
+api-version: 1.16
+description: "Integrates JIRA into Minecraft
+               1. Add issue by placing any sign on desired location
+                  a. First line: {jira}
+                  b. Second line: Short description of plugin
+
+                  (First line will be replaced with the key of jira issue after it has been created)
+               2. Set to 'In Progress' by coloring it to red
+
+               You cannot teleport to location if there is no solid block underneath and 2 blocks space for player"
+
+author: Tibi
+
 
 commands:
    gotoIssue:
-      description: Locates a nearby JIRA Issue
+      description: Teleports to JIRA issue location
       usage: /gotoIssue <ISSUE>
    jiraIssues:
-      description: get all JIRA issues
+      description: List all JIRA issues
       usage: /jiraIssues

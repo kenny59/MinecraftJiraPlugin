@@ -1,14 +1,14 @@
 package au.id.jaysee.minecraft;
 
+import au.id.jaysee.helpers.JiraIssuesHelper;
 import au.id.jaysee.minecraft.config.Configuration;
 import au.id.jaysee.minecraft.config.ConfigurationLoader;
-import au.id.jaysee.minecraft.jira.client.*;
-import au.id.jaysee.minecraft.jira.client.auth.AuthenticatedResourceFactory;
-import au.id.jaysee.minecraft.jira.client.auth.BasicAuthenticatedResourceFactory;
+import au.id.jaysee.minecraft.jira.client.auth.DefaultAuthenticatedResourceFactory;
 import au.id.jaysee.minecraft.task.TaskExecutor;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.net.URISyntaxException;
 import java.util.logging.Logger;
 
 /**
@@ -20,7 +20,7 @@ public class McJiraPlugin extends JavaPlugin
 {
     private Logger log;
 
-    private JiraClient jiraClient;
+    private JiraIssuesHelper jiraClient;
     private TaskExecutor taskExecutor;
     private McJiraBlockListener blockListener;
 
@@ -30,7 +30,6 @@ public class McJiraPlugin extends JavaPlugin
     public void onDisable()
     {
         log.info("Disabled message here, shown in console on startup");
-        // TODO: graceful cleanup
     }
 
     /**
@@ -39,45 +38,35 @@ public class McJiraPlugin extends JavaPlugin
     public void onEnable()
     {
         log = getLogger();
-        log.info("Enabling Minecraft JIRA plugin - http://bitbucket.org/jaysee00/minecraftjiraplugin");
+        log.info("Enabling Minecraft JIRA plugin");
 
-        // Load plugin configuration from config.yml
         final Configuration config = loadConfiguration();
 
-        // Use the configuration to login to Jira.
-        AuthenticatedResourceFactory resourceFactory = new BasicAuthenticatedResourceFactory(config, log);
-        if (!resourceFactory.login())
-        {
-            log.severe("*********************************************************");
-            log.severe("* Unable to login in to JIRA. Check your configuration. *");
-            log.severe("*********************************************************");
+        DefaultAuthenticatedResourceFactory resourceFactory = null;
+        try {
+            resourceFactory = new DefaultAuthenticatedResourceFactory(config, log);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
         }
 
-        // Load components
-        jiraClient = new DefaultJiraClient(log, resourceFactory, config.getLocationCustomFieldId(), config.getMinecraftProjectKey(), config.getJiraAdminUsername());
-        final ActivityStreamClient activityStreamClient = new DefaultActivityStreamClient(this, config, resourceFactory);
-        final JiraUserClient jiraUserClient = new JiraUserClient(log, config);
 
+        jiraClient = new JiraIssuesHelper(resourceFactory.getClient(), config);
 
         taskExecutor = new TaskExecutor(this, getServer().getScheduler());
 
         blockListener = new McJiraBlockListener(this, jiraClient, taskExecutor, log, config);
 
-        // Register block event listeners - code that executes when the world environment is manipulated.
         final PluginManager pluginManager = this.getServer().getPluginManager();
 
-        final LoginListener streamListener = new LoginListener(this, config, jiraUserClient, activityStreamClient, taskExecutor);
         pluginManager.registerEvents(blockListener, this);
 
-        // Register command executors - code that executes in response to player /slash commands, or commands via the server console.
         getCommand("jiraIssues").setExecutor(new JiraIssuesCommandExecutor(taskExecutor, log, jiraClient));
         getCommand("gotoIssue").setExecutor(new GoToIssueCommandExecutor(this, log, jiraClient));
     }
 
     private Configuration loadConfiguration()
     {
-        getConfig().options().copyDefaults(true);
-        saveConfig();
+        saveDefaultConfig();
 
         final ConfigurationLoader loader = new ConfigurationLoader(getConfig(), log);
         return loader.load();

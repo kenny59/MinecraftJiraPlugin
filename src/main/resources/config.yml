@@ -1,6 +1,8 @@
-jira.base.url: http://localhost:8080
-jira.admin.username: admin
-jira.admin.password: admin
-jira.minecraft.project.key: MC
-jira.location.custom.field: 10000
+jira.base.url: https://xxxxxx.atlassian.net
+jira.admin.username: xxxxxxx@gmail.com
+jira.admin.api.token: xxxxxxxxxxxxxxxxxxxx
+jira.minecraft.project.key: xx
+jira.minecraft.project.parent: xxxx
+jira.admin.transition.progress: 31
+jira.admin.transition.done: 41
 debug.logging.enabled: false

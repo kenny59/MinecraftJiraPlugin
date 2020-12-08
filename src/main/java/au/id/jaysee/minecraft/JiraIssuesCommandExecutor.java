@@ -1,16 +1,17 @@
 package au.id.jaysee.minecraft;
 
-import au.id.jaysee.minecraft.jira.client.JiraClient;
-import au.id.jaysee.minecraft.jira.client.JiraIssue;
-import au.id.jaysee.minecraft.jira.client.JiraIssues;
+import au.id.jaysee.helpers.JiraIssuesHelper;
 import au.id.jaysee.minecraft.task.Callback;
 import au.id.jaysee.minecraft.task.Task;
 import au.id.jaysee.minecraft.task.TaskExecutor;
+import com.atlassian.jira.rest.client.api.JiraRestClient;
+import com.atlassian.jira.rest.client.api.domain.Issue;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -22,9 +23,9 @@ public class JiraIssuesCommandExecutor implements CommandExecutor
 
     private final TaskExecutor taskExecutor;
     private final Logger log;
-    private final JiraClient jiraClient;
+    private final JiraIssuesHelper jiraClient;
 
-    public JiraIssuesCommandExecutor(final TaskExecutor taskExecutor, final Logger log, final JiraClient jiraClient)
+    public JiraIssuesCommandExecutor(final TaskExecutor taskExecutor, final Logger log, final JiraIssuesHelper jiraClient)
     {
         this.taskExecutor = taskExecutor;
         this.log = log;
@@ -38,29 +39,30 @@ public class JiraIssuesCommandExecutor implements CommandExecutor
             return false;
 
         log.info("jiraIssues command invoked");
-        taskExecutor.executeAsyncTask(new Task<JiraIssues>()
+
+        taskExecutor.executeAsyncTask(new Task<List<Issue>>()
         {
             @Override
-            public JiraIssues execute()
-            {
+            public List<Issue> execute() {
                 return jiraClient.getIssues();
             }
-        }, new Callback<JiraIssues>()
+        }, new Callback<List<Issue>>()
         {
+
             @Override
-            public void execute(JiraIssues input)
+            public void execute(List<Issue> input)
             {
                 if (sender instanceof Player)
                 {
                     Player p = (Player)sender;
-                    for (JiraIssue j : input.getIssues())
+                    for (Issue j : input)
                     {
-                        p.chat(j.getKey() + ": " + j.getSummary());
+                        p.sendMessage(j.getKey() + ": " + j.getSummary());
                     }
                 }
                 else
                 {
-                    for (JiraIssue j : input.getIssues())
+                    for (Issue j : input)
                     {
                         log.info(j.getKey() + ": " + j.getSummary());
                     }

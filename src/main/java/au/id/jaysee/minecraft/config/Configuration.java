@@ -11,35 +11,26 @@ package au.id.jaysee.minecraft.config;
 public final class Configuration
 {
     private final String jiraBaseUrl;
-    private final String minecraftProjectKey;
+    private final String projectKey;
+    private final String parentKey;
     private final String jiraAdminUsername;
-    private final String jiraAdminPassword;
-    private final String locationCustomFieldId;
+    private final String jiraApiToken;
+    private final Integer jiraProgressTransition;
+    private final Integer jiraDoneTransition;
     private final boolean debugLoggingEnabled;
 
-    // Feature switches
     private final boolean dynamicUserCreation;
 
-    /**
-     * Constructs a new Configuration POJO. This constructor has package-only access; should only be called by
-     * {@link ConfigurationLoader#load}.
-     *
-     * @param jiraBaseUrl           The base URL of the JIRA Server to connect to.
-     * @param minecraftProjectKey   The project key of the project to use for creating Minecraft issues.
-     * @param jiraAdminUsername     Username of a JIRA user with admin privileges - used for authenticating against the JIRA server.
-     * @param jiraAdminPassword     Password of the JIRA user identified by the {@literal jiraAdminUsername} parameter.
-     * @param locationCustomFieldId The Field ID of the custom field that is used to persist the world co-ordinates of JIRA issue.
-     * @param debugLoggingEnabled   Whether or not diagnostic logging will be printed to the server console.
-     */
-    Configuration(String jiraBaseUrl, String minecraftProjectKey, String jiraAdminUsername, String jiraAdminPassword, String locationCustomFieldId, boolean debugLoggingEnabled, boolean dynamicUserCreation)
+    public Configuration(String jiraBaseUrl, String projectKey, String parentKey, String jiraAdminUsername, String jiraApiToken, String jiraProgressTransition, String jiraDoneTransition, boolean debugLoggingEnabled, boolean dynamicUserCreation)
     {
         this.jiraBaseUrl = jiraBaseUrl;
-        this.minecraftProjectKey = minecraftProjectKey;
+        this.projectKey = projectKey;
+        this.parentKey = parentKey;
         this.jiraAdminUsername = jiraAdminUsername;
-        this.jiraAdminPassword = jiraAdminPassword;
-        this.locationCustomFieldId = locationCustomFieldId;
+        this.jiraApiToken = jiraApiToken;
+        this.jiraProgressTransition = Integer.parseInt(jiraProgressTransition);
+        this.jiraDoneTransition = Integer.parseInt(jiraDoneTransition);
         this.debugLoggingEnabled = debugLoggingEnabled;
-
         this.dynamicUserCreation = dynamicUserCreation;
     }
 
@@ -61,14 +52,6 @@ public final class Configuration
     }
 
     /**
-     * The project key of the project to use for creating Minecraft issues(eg. "MC").
-     */
-    public String getMinecraftProjectKey()
-    {
-        return minecraftProjectKey;
-    }
-
-    /**
      * Username of a JIRA user with admin privileges - used for authenticating against the JIRA server (eg. "admin").
      */
     public String getJiraAdminUsername()
@@ -76,20 +59,8 @@ public final class Configuration
         return jiraAdminUsername;
     }
 
-    /**
-     * Password of the JIRA user identified by the {@literal jiraAdminUsername} parameter (eg. "admin").
-     */
-    public String getJiraAdminPassword()
-    {
-        return jiraAdminPassword;
-    }
-
-    /**
-     * The Field ID of the custom field that is used to persist the world co-ordinates of JIRA issue (eg. "10000").
-     */
-    public String getLocationCustomFieldId()
-    {
-        return locationCustomFieldId;
+    public String getJiraApiToken() {
+        return jiraApiToken;
     }
 
     /**
@@ -98,5 +69,21 @@ public final class Configuration
     public boolean isDebugLoggingEnabled()
     {
         return debugLoggingEnabled;
+    }
+
+    public String getProjectKey() {
+        return projectKey;
+    }
+
+    public String getParentKey() {
+        return parentKey;
+    }
+
+    public Integer getJiraProgressTransition() {
+        return jiraProgressTransition;
+    }
+
+    public Integer getJiraDoneTransition() {
+        return jiraDoneTransition;
     }
 }
