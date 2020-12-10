@@ -1,7 +1,7 @@
 2020 UPDATE
 ======================
 
-I decided to bring-up the plugin for 1.16.x version and using the REST API of JIRA as since the original plugin was released, it is deprecated.
+I decided to bring-up the plugin for 1.16.x version and using the REST API of JIRA as since the original plugin was released, some of it's functionality has been deprecated.
 
 ORIGINAL DESCRIPTION (by jaysee00) [link](https://bitbucket.org/jaysee00/minecraftjiraplugin/)
 ======================
