@@ -3,6 +3,4 @@ jira.admin.username: xxxxxxx@gmail.com
 jira.admin.api.token: xxxxxxxxxxxxxxxxxxxx
 jira.minecraft.project.key: xx
 jira.minecraft.project.parent: xxxx
-jira.admin.transition.progress: 31
-jira.admin.transition.done: 41
 debug.logging.enabled: false

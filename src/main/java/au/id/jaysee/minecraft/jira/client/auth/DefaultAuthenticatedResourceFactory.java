@@ -2,7 +2,10 @@ package au.id.jaysee.minecraft.jira.client.auth;
 
 import au.id.jaysee.minecraft.config.Configuration;
 import com.atlassian.jira.rest.client.api.JiraRestClient;
+import com.atlassian.jira.rest.client.api.RestClientException;
 import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.codehaus.jettison.json.JSONException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -44,10 +47,12 @@ public class DefaultAuthenticatedResourceFactory implements AuthenticatedResourc
      * Performs global configuration of the jira rest client.
      * With login: username +  api token
      */
-    private void initJerseyConfig() throws URISyntaxException {
+    private void initJerseyConfig() throws URISyntaxException, RestClientException {
         JiraRestClient client = new AsynchronousJiraRestClientFactory()
                 .createWithBasicHttpAuthentication(new URI(pluginConfiguration.getJiraBaseUrl()), pluginConfiguration.getJiraAdminUsername(), pluginConfiguration.getJiraApiToken());
         jerseyClient = client;
+        log.info("Trying connection");
+        jerseyClient.getMetadataClient().getIssueTypes().claim();
     }
 
     @Override

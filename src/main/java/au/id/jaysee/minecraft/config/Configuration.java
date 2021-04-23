@@ -15,21 +15,17 @@ public final class Configuration
     private final String parentKey;
     private final String jiraAdminUsername;
     private final String jiraApiToken;
-    private final Integer jiraProgressTransition;
-    private final Integer jiraDoneTransition;
     private final boolean debugLoggingEnabled;
 
     private final boolean dynamicUserCreation;
 
-    public Configuration(String jiraBaseUrl, String projectKey, String parentKey, String jiraAdminUsername, String jiraApiToken, String jiraProgressTransition, String jiraDoneTransition, boolean debugLoggingEnabled, boolean dynamicUserCreation)
+    public Configuration(String jiraBaseUrl, String projectKey, String parentKey, String jiraAdminUsername, String jiraApiToken, boolean debugLoggingEnabled, boolean dynamicUserCreation)
     {
         this.jiraBaseUrl = jiraBaseUrl;
         this.projectKey = projectKey;
         this.parentKey = parentKey;
         this.jiraAdminUsername = jiraAdminUsername;
         this.jiraApiToken = jiraApiToken;
-        this.jiraProgressTransition = Integer.parseInt(jiraProgressTransition);
-        this.jiraDoneTransition = Integer.parseInt(jiraDoneTransition);
         this.debugLoggingEnabled = debugLoggingEnabled;
         this.dynamicUserCreation = dynamicUserCreation;
     }
@@ -77,13 +73,5 @@ public final class Configuration
 
     public String getParentKey() {
         return parentKey;
-    }
-
-    public Integer getJiraProgressTransition() {
-        return jiraProgressTransition;
-    }
-
-    public Integer getJiraDoneTransition() {
-        return jiraDoneTransition;
     }
 }

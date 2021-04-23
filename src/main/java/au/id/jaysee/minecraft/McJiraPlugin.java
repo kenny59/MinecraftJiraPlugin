@@ -5,10 +5,12 @@ import au.id.jaysee.minecraft.config.Configuration;
 import au.id.jaysee.minecraft.config.ConfigurationLoader;
 import au.id.jaysee.minecraft.jira.client.auth.DefaultAuthenticatedResourceFactory;
 import au.id.jaysee.minecraft.task.TaskExecutor;
+import com.atlassian.jira.rest.client.api.RestClientException;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.net.URISyntaxException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -29,7 +31,7 @@ public class McJiraPlugin extends JavaPlugin
      */
     public void onDisable()
     {
-        log.info("Disabled message here, shown in console on startup");
+        log.info("Plugin has been disabled because of fatal error");
     }
 
     /**
@@ -46,9 +48,12 @@ public class McJiraPlugin extends JavaPlugin
         try {
             resourceFactory = new DefaultAuthenticatedResourceFactory(config, log);
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            log.info("URISyntaxException");
+        } catch (RestClientException e) {
+            log.log(Level.SEVERE, "You probably tried to use password instead of token or your credentials are wrong. Please go to https://id.atlassian.com/manage/api-tokens to generate your token.");
+            this.getServer().getPluginManager().disablePlugin(this);
+            return;
         }
-
 
         jiraClient = new JiraIssuesHelper(resourceFactory.getClient(), config);
 

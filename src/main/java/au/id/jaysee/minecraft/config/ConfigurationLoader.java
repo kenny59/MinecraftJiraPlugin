@@ -39,8 +39,6 @@ public class ConfigurationLoader
                 configFile.getString("jira.minecraft.project.parent"),
                 configFile.getString("jira.admin.username"),
                 configFile.getString("jira.admin.api.token"),
-                configFile.getString("jira.admin.transition.progress"),
-                configFile.getString("jira.admin.transition.done"),
                 configFile.getBoolean("debug.logging.enabled"),
                 configFile.getBoolean("true")
         );

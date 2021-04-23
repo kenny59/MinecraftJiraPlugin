@@ -11,25 +11,30 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.Attachable;
+import org.bukkit.block.data.type.Wall;
+import org.bukkit.block.data.type.WallSign;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class McJiraBlockListener implements Listener
 {
@@ -54,7 +59,6 @@ public class McJiraBlockListener implements Listener
     @EventHandler(priority = EventPriority.NORMAL)
     public void onSignChange(final SignChangeEvent event)
     {
-
         if (!isNewJiraSign(event)) {
             return;
         }
@@ -73,34 +77,34 @@ public class McJiraBlockListener implements Listener
                         return jiraClient.createIssue(event.getPlayer(), issueSummary, l);
                     }
                 }, new Callback<String>()
-        {
-            @Override
-            public void execute(String input)
             {
-                if (input != null)
+                @Override
+                public void execute(String input)
                 {
-                    parentPlugin.getServer().getPlayer(user).chat("Created new JIRA Issue " + input + ": " + issueSummary);
-
-                    Block blockLatest = w.getBlockAt(l);
-                    log.info("The block in world " + w.getName() + " at position " + l.toString() + " is " + blockLatest.getType().toString());
-                    if (EnumUtils.isSign(blockLatest.getType().name()))
+                    if (input != null)
                     {
-                        log.info("Preparing to update sign.");
-                        Sign signage = (Sign) blockLatest.getState();
-                        String lineOrig = signage.getLine(0);
-                        lineOrig = lineOrig.replace("{jira}", "{" + input + "}");
-                        log.info("New first line text: " + lineOrig);
-                        signage.setLine(0, lineOrig);
-                        signage.update();
-                        log.info("Sign Updated.");
+                        parentPlugin.getServer().getPlayer(user).chat("Created new JIRA Issue " + input + ": " + issueSummary);
+
+                        Block blockLatest = w.getBlockAt(l);
+                        log.info("The block in world " + w.getName() + " at position " + l.toString() + " is " + blockLatest.getType().toString());
+                        if (EnumUtils.isSign(blockLatest.getType().name()))
+                        {
+                            log.info("Preparing to update sign.");
+                            Sign signage = (Sign) blockLatest.getState();
+                            String lineOrig = signage.getLine(0);
+                            lineOrig = lineOrig.toUpperCase().replace("{JIRA}", "{" + input + "}");
+                            log.info("New first line text: " + lineOrig);
+                            signage.setLine(0, lineOrig);
+                            signage.update();
+                            log.info("Sign Updated.");
+                        }
+                    }
+                    else
+                    {
+                        parentPlugin.getServer().getPlayer(user).sendMessage("Could not create new JIRA Issue :(");
                     }
                 }
-                else
-                {
-                    parentPlugin.getServer().getPlayer(user).sendMessage("Could not create new JIRA Issue :(");
-                }
             }
-        }
         );
     }
 
@@ -115,7 +119,7 @@ public class McJiraBlockListener implements Listener
                     EnumUtils.isSign(block.getType().name())) {
                 Sign sign = (Sign) block.getState();
                 if(event.getPlayer().getInventory().getItemInMainHand().getType().name().equals(Material.RED_DYE.name())) {
-                    Issue matchData = isExistingJiraSign(sign);
+                    Issue matchData = isExistingJiraSign(sign.getLine(0));
                     if(matchData != null) {
                         taskExecutor.executeAsyncTask(new Task<Boolean>()
                         {
@@ -137,7 +141,6 @@ public class McJiraBlockListener implements Listener
                                 event.getPlayer().chat("Resolved JIRA issue to 'In Progress' " + matchData.getKey());
                             }
                         });
-
                     }
                 }
             }
@@ -145,22 +148,14 @@ public class McJiraBlockListener implements Listener
         }
     }
 
-    List<Block> getSignOnBlock(Block block) {
-        return List.of(BlockFace.DOWN, BlockFace.UP, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH, BlockFace.EAST)
-                .stream().map(blockFace -> {
-                    if(EnumUtils.isSign(block.getRelative(blockFace).getType().name())) {
-                        return block.getRelative(blockFace);
-                    }
-                    return null;
-                }).filter(Objects::nonNull).collect(Collectors.toList());
-    }
-
-
     @EventHandler(priority = EventPriority.NORMAL)
     public void onBlockBreak(final BlockBreakEvent event)
     {
         Block brokenBlock = event.getBlock();
-        if (!List.of(EnumUtils.isSign(brokenBlock.getType().name()), getSignOnBlock(brokenBlock).size()>0).contains(true))
+
+        List<Sign> allSigns = getSignsOnBrokenBlock(brokenBlock);
+
+        if (!EnumUtils.isSign(brokenBlock.getType().name()) && allSigns.size() == 0)
         {
             if (config.isDebugLoggingEnabled())
             {
@@ -169,25 +164,15 @@ public class McJiraBlockListener implements Listener
             return;
         }
 
-        if (!List.of((brokenBlock.getState() instanceof Sign), getSignOnBlock(brokenBlock).size()>0).contains(true))
-        {
-            if (config.isDebugLoggingEnabled())
-            {
-                log.info("Block did not contain sign state, exiting.");
-            }
-            return;
+        for (Sign sign : allSigns) {
+            processSign(brokenBlock, sign, event.getPlayer().getDisplayName());
         }
+    }
 
-        List<Block> blocks = getSignOnBlock(brokenBlock);
-        Sign signage = null;
+    void processSign(Block brokenBlock, Sign signage, String displayName) {
 
-        if(blocks.size()>0) {
-            signage = (Sign) blocks.get(0).getState();
-        } else {
-            signage = (Sign) brokenBlock.getState();
-        }
+        final Issue matchData = isExistingJiraSign(signage.getLine(0));
 
-        final Issue matchData = isExistingJiraSign(signage);
         if (matchData == null)
         {
             if (config.isDebugLoggingEnabled())
@@ -198,7 +183,7 @@ public class McJiraBlockListener implements Listener
         }
         // Existing JIRA sign.
         final String issueKey = matchData.getKey();
-        final String user = event.getPlayer().getDisplayName();
+        final String user = displayName;
         log.info(String.format("Sign for issueKey %s was destroyed; issue should be resolved.", issueKey));
 
         final int x = brokenBlock.getX();
@@ -208,27 +193,51 @@ public class McJiraBlockListener implements Listener
 
         // do it.
         taskExecutor.executeAsyncTask(new Task<Boolean>()
-        {
-            @Override
-            public Boolean execute() throws URISyntaxException {
-                return jiraClient.resolveIssue("DONE", issueKey);
-            }
-        }, new Callback<Boolean>()
-        {
-            @Override
-            public void execute(Boolean input)
             {
-                if (!input)
-                {
-                    log.warning("Attempt to resolve JIRA Issue " + issueKey + " did not succeed, but the sign is being destroyed anyway.");
-                    return;
-                }
+              @Override
+              public Boolean execute() throws URISyntaxException {
+                  return jiraClient.resolveIssue("DONE", issueKey);
+              }
+            }, new Callback<Boolean>()
+            {
+              @Override
+              public void execute(Boolean input)
+              {
+                  if (!input)
+                  {
+                      log.warning("Attempt to resolve JIRA Issue " + issueKey + " did not succeed, but the sign is being destroyed anyway.");
+                      return;
+                  }
 
-                // All good.
-                parentPlugin.getServer().getPlayer(user).chat("Resolved JIRA issue " + issueKey);
+                  // All good.
+                  parentPlugin.getServer().getPlayer(user).chat("Resolved JIRA issue " + issueKey);
+              }
             }
-        }
         );
+    }
+
+    List<Sign> getSignsOnBrokenBlock(Block block) {
+        List<Sign> wallSigns = Stream.of(BlockFace.EAST, BlockFace.WEST, BlockFace.NORTH, BlockFace.SOUTH)
+                .filter(bf -> block.getRelative(bf).getBlockData() instanceof WallSign)
+                .map(bf -> {
+                    WallSign sign = (WallSign) block.getRelative(bf).getBlockData();
+                    if(sign.getFacing().getOppositeFace().equals(bf.getOppositeFace())) return (Sign) block.getRelative(bf).getState();
+                    return null;
+                }).filter(Objects::nonNull).collect(Collectors.toList());
+        if(block.getRelative(BlockFace.UP).getState() instanceof Sign && !(block.getRelative(BlockFace.UP).getBlockData() instanceof WallSign)) {
+            wallSigns.add((Sign) block.getRelative(BlockFace.UP).getState());
+        }
+        if(block.getState() instanceof Sign) {
+            wallSigns.add((Sign) block.getState());
+        }
+        return wallSigns;
+    }
+
+    Sign getSignOnBlock(Block block) {
+        if(block.getRelative(BlockFace.UP).getBlockData() instanceof Sign) {
+            return (Sign) block.getRelative(BlockFace.UP).getBlockData();
+        }
+        return null;
     }
 
     private boolean isNewJiraSign(SignChangeEvent event)
@@ -237,14 +246,13 @@ public class McJiraBlockListener implements Listener
         return firstLine.equalsIgnoreCase(JIRA_SIGN_KEY);
     }
 
-    private Issue isExistingJiraSign(Sign sign)
+    private Issue isExistingJiraSign(String firstLine)
     {
         Pattern issueKeyPattern = Pattern.compile(JIRA_ISSUE_KEY_REGEX);
-        Matcher issueKeyMatcher = issueKeyPattern.matcher(sign.getLine(0));
+        Matcher issueKeyMatcher = issueKeyPattern.matcher(firstLine);
 
         if(issueKeyMatcher.matches()) {
             String issueKey = issueKeyMatcher.group().replace("{", "").replace("}", "");
-            System.out.println(issueKey);
             return jiraClient.getIssueByKey(issueKey);
         } else {
             return null;
