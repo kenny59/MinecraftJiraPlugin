@@ -57,7 +57,6 @@
             <id>maven-central</id>
             <url>https://jcenter.bintray.com</url>
         </repository>
-
         <!--<repository>
             <id>maven-atlassian</id>
             <url>https://packages.atlassian.com/mvn/maven-external</url>
